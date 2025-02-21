@@ -10,11 +10,22 @@
             width: 100vw;
             height: 100vh;
         }
+        #coordinates {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
 
     <div id="map"></div>
+    <div id="coordinates">Move your cursor over the map</div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
@@ -42,34 +53,27 @@
         });
 
         map.fitBounds(bounds);
-        map.setView([302/ 2, 754/ 2], 0);
+        map.setView([302 / 2, 754 / 2], 0);
 
-<script>
-    var map = L.map('map').setView([20.5937, 78.9629], 5); // Default view (India)
+        // **Live coordinates on cursor movement**
+        map.on('mousemove', function(e) {
+            var lat = e.latlng.lat.toFixed(2);
+            var lng = e.latlng.lng.toFixed(2);
+            document.getElementById('coordinates').innerHTML = `Latitude: ${lat}, Longitude: ${lng}`;
+        });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+        // **Click to Copy Coordinates**
+        map.on('click', function(e) {
+            var lat = e.latlng.lat.toFixed(2);
+            var lng = e.latlng.lng.toFixed(2);
 
-    var coordsDisplay = L.control({position: 'bottomleft'});
-    
-    coordsDisplay.onAdd = function () {
-        var div = L.DomUtil.create('div', 'leaflet-control-latlon');
-        div.style.background = 'rgba(255,255,255,0.8)';
-        div.style.padding = '5px';
-        div.style.borderRadius = '4px';
-        div.innerHTML = "Move mouse to see coordinates";
-        return div;
-    };
-    coordsDisplay.addTo(map);
-    
-    map.on('mousemove', function(e) {
-        var lat = e.latlng.lat.toFixed(6);
-        var lon = e.latlng.lng.toFixed(6);
-        document.querySelector('.leaflet-control-latlon').textContent = `Lat: ${lat}, Lon: ${lon}`;
-    });
-</script>
-
+            console.log("Clicked at: ", lat, lng);
+            
+            L.popup()
+                .setLatLng(e.latlng)
+                .setContent(`<b>Latitude:</b> ${lat}<br><b>Longitude:</b> ${lng}`)
+                .openOn(map);
+        });
 
     </script>
 
