@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
         #map {
-            width: 100vw;  
-            height: 100vh; 
+            width: 100vw;  /* Full-screen width */
+            height: 100vh; /* Full-screen height */
         }
     </style>
 </head>
@@ -19,28 +19,25 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         
+        // Step 1: Initialize the map
         var map = L.map('map', {
-            minZoom: -2,  
-            maxZoom: 4,   
-            crs: L.CRS.Simple 
+            minZoom: -2,  // Allows zooming out
+            maxZoom: 4,   // Allows zooming in
+            crs: L.CRS.Simple  // Uses a simple coordinate system for images
+            
         });
 
-        var imageWidth = 754;  
-        var imageHeight = 302; 
-        var bounds = [[0, 0], [302, 754]];
+        // Step 2: Set image dimensions (YOUR PNG SIZE)
+        var imageWidth = 754;  // PNG width
+        var imageHeight = 302; // PNG height
+        var bounds = [[0, 0], [302, 754]]; // Maintain aspect ratio
 
+        // Step 3: Add your PNG image to the map
         var image = L.imageOverlay('campus.png', bounds).addTo(map);
-        map.fitBounds(bounds);  
+        map.fitBounds(bounds);  // Ensures the whole image is visible on load
+
+        // Step 4 (Optional): Center the map
         map.setView([302 / 2, 754 / 2], 0);
-
-        // Fix: Ensure clicks work on the image overlay
-        map.on('click', function(e) {
-            var lat = e.latlng.lat.toFixed(2);
-            var lng = e.latlng.lng.toFixed(2);
-            console.log("X: " + lat + ", Y: " + lng);
-            alert("Clicked at X: " + lat + ", Y: " + lng);
-        });
-
     </script>
 
 </body>
