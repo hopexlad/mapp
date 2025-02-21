@@ -44,27 +44,32 @@
         map.fitBounds(bounds);
         map.setView([302/ 2, 754/ 2], 0);
 
-        // **Click event to get coordinates**
-        <script>
+<script>
     var map = L.map('map').setView([20.5937, 78.9629], 5); // Default view (India)
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    var marker;
+    var coordsDisplay = L.control({position: 'bottomleft'});
     
-    map.on('click', function(e) {
+    coordsDisplay.onAdd = function () {
+        var div = L.DomUtil.create('div', 'leaflet-control-latlon');
+        div.style.background = 'rgba(255,255,255,0.8)';
+        div.style.padding = '5px';
+        div.style.borderRadius = '4px';
+        div.innerHTML = "Move mouse to see coordinates";
+        return div;
+    };
+    coordsDisplay.addTo(map);
+    
+    map.on('mousemove', function(e) {
         var lat = e.latlng.lat.toFixed(6);
         var lon = e.latlng.lng.toFixed(6);
-        document.getElementById('coordinates').textContent = `Latitude: ${lat}, Longitude: ${lon}`;
-        
-        if (marker) {
-            marker.setLatLng(e.latlng);
-        } else {
-            marker = L.marker(e.latlng).addTo(map);
-        }
+        document.querySelector('.leaflet-control-latlon').textContent = `Lat: ${lat}, Lon: ${lon}`;
     });
+</script>
+
 
     </script>
 
