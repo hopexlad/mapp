@@ -23,14 +23,11 @@
     </style>
 </head>
 <body>
-
     <div id="map"></div>
     <div id="coordinates">Move your cursor over the map</div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        console.log("Leaflet script loaded!");
-
         var map = L.map('map', {
             minZoom: -2,  
             maxZoom: 4,   
@@ -41,41 +38,41 @@
         var imageHeight = 302; 
         var bounds = [[0, 0], [302, 754]];
 
-        console.log("Bounds:", bounds);
-
         var imageUrl = 'campus.png';  
         var image = L.imageOverlay(imageUrl, bounds).addTo(map);
-
-        image.on('load', function() {
-            console.log("Image loaded successfully!");
-        }).on('error', function() {
-            console.error("Image failed to load. Check the path!");
-        });
 
         map.fitBounds(bounds);
         map.setView([302 / 2, 754 / 2], 0);
 
-        // **Live coordinates on cursor movement**
         map.on('mousemove', function(e) {
             var lat = e.latlng.lat.toFixed(2);
             var lng = e.latlng.lng.toFixed(2);
             document.getElementById('coordinates').innerHTML = `Latitude: ${lat}, Longitude: ${lng}`;
         });
 
-        // **Click to Copy Coordinates**
         map.on('click', function(e) {
             var lat = e.latlng.lat.toFixed(2);
             var lng = e.latlng.lng.toFixed(2);
 
-            console.log("Clicked at: ", lat, lng);
-            
             L.popup()
                 .setLatLng(e.latlng)
                 .setContent(`<b>Latitude:</b> ${lat}<br><b>Longitude:</b> ${lng}`)
                 .openOn(map);
         });
 
-    </script>
+        // ** Room Markers **
+        var rooms = [
+            { name: "Room 101", lat: 214.83, lng: 717.00 },
+            { name: "Room 102", lat: 66.75, lng: 717.00 },
+            { name: "Lab 1", lat: 150, lng: 250 },
+            { name: "Library", lat: 200, lng: 300 }
+        ];
 
+        rooms.forEach(room => {
+            L.marker([room.lat, room.lng]).addTo(map)
+                .bindPopup(`<b>${room.name}</b><br>Lat: ${room.lat}, Lng: ${room.lng}`);
+        });
+    </script>
 </body>
 </html>
+
