@@ -18,6 +18,7 @@
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
+        
         // Step 1: Initialize the map
         var map = L.map('map', {
             minZoom: -2,  // Allows zooming out
@@ -34,8 +35,15 @@
         var image = L.imageOverlay('campus.png', bounds).addTo(map);
         map.fitBounds(bounds);  // Ensures the whole image is visible on load
 
-        // Step 4 (Optional): Center the map
+        // Step 4: Center the map
         map.setView([302 / 2, 754 / 2], 0);
+
+        // Step 5: Click event to get coordinates
+        map.on('click', function(e) {
+            console.log("X: " + e.latlng.lat + ", Y: " + e.latlng.lng);
+            alert("Clicked at X: " + e.latlng.lat + ", Y: " + e.latlng.lng);
+        });
+
     </script>
 
 </body>
