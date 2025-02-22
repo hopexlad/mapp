@@ -128,8 +128,45 @@
     </style>
 </head>
 <body>
+<!-- Welcome Screen -->
+<div id="welcomeScreen" class="screen">
+    <img src="log.png" class="logo" alt="KPR Logo">
+</div>
 
-    <!-- Welcome Screen -->
+<!-- Map Screen -->
+<div id="map-container" style="display: none;">
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Search rooms..." />
+        <button id="search-button">Search</button>
+    </div>
+
+    <div class="ui-container">
+        <button onclick="toggleRooms()">Toggle Rooms</button>
+        <button onclick="goToFrontPage()">Front Page</button>
+    </div>
+
+    <div id="map"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    document.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {  // Checks if Enter key is pressed
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            setTimeout(() => {
+                document.getElementById('welcomeScreen').style.display = 'none';
+                document.getElementById('map-container').style.display = 'block';
+                initializeMap();
+            }, 1000); 
+        }
+    });
+
+    function initializeMap() {
+        console.log("Map initialized"); // Add your map initialization logic here
+    }
+</script>
+
+<!--     <!-- Welcome Screen -->
     <div id="welcomeScreen" class="screen">
         <img src="log.png" class="logo" alt="KPR Logo" >
     </div>
@@ -158,7 +195,7 @@
                 document.getElementById('map-container').style.display = 'block';
                 initializeMap();
             }, 1000);
-        }, 3000);
+        }, 3000); -->
 
         // Initialize Map
         function initializeMap() {
