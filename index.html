@@ -93,13 +93,13 @@
         };
 
         var imageOverlay;
-        var activeCircle = null;
+        var activeShape = null;
         var activeMarker = null;
         var activePopup = null;
 
         function loadFloor() {
             if (imageOverlay) map.removeLayer(imageOverlay);
-            if (activeCircle) map.removeLayer(activeCircle);
+            if (activeShape) map.removeLayer(activeShape);
             if (activeMarker) map.removeLayer(activeMarker);
             if (activePopup) map.closePopup(activePopup);
 
@@ -107,44 +107,52 @@
             map.fitBounds(campus.bounds);
 
             campus.markers.forEach(room => {
-                var circle = L.circleMarker(room.coords, {
-                    radius: 20, // Larger Clickable Area
+                var square = L.rectangle([
+                    [room.coords[0] - 5, room.coords[1] - 5], 
+                    [room.coords[0] + 5, room.coords[1] + 5]
+                ], {
                     color: "transparent",
                     fillColor: "transparent",
                     fillOpacity: 0.5
                 }).addTo(map);
 
-                // Show label on hover
-                circle.on('mouseover', function () {
+                // Change to square when hovering
+                square.on('mouseover', function () {
+                    square.setStyle({ color: "blue", fillColor: "yellow", fillOpacity: 0.3 });
+                });
+
+                // Revert to transparent when leaving
+                square.on('mouseout', function () {
+                    square.setStyle({ color: "transparent", fillColor: "transparent" });
+                });
+
+                square.on('click', function () {
+                    // Remove previous highlight and pin
+                    if (activeShape) {
+                        activeShape.setStyle({ color: "transparent", fillColor: "transparent" });
+                        map.removeLayer(activeMarker);
+                    }
+
+                    // Change to 10-radius circle
+                    activeShape = L.circle(room.coords, {
+                        radius: 10,
+                        color: "blue",
+                        fillColor: "yellow",
+                        fillOpacity: 0.8
+                    }).addTo(map);
+
+                    // Show label
                     activePopup = L.popup({ closeButton: false, autoClose: false })
                         .setLatLng(room.coords)
                         .setContent(`<b>${room.name}</b>`)
                         .openOn(map);
-                });
 
-                // Hide label when mouse leaves
-                circle.on('mouseout', function () {
-                    map.closePopup(activePopup);
-                    activePopup = null;
-                });
-
-                circle.on('click', function () {
-                    // Remove Previous Highlight and Pin
-                    if (activeCircle) {
-                        activeCircle.setStyle({ color: "transparent", fillColor: "transparent" });
-                        map.removeLayer(activeMarker);
-                    }
-
-                    // Highlight the Clicked Room
-                    circle.setStyle({ color: "blue", fillColor: "yellow", fillOpacity: 0.8 });
-                    activeCircle = circle;
-
-                    // Add Pin Image
+                    // Add pin
                     activeMarker = L.marker(room.coords, {
                         icon: L.icon({
                             iconUrl: 'pin.png',
-                            iconSize: [30, 40], // Pin Size
-                            iconAnchor: [15, 40] // Bottom center
+                            iconSize: [30, 40],
+                            iconAnchor: [15, 40]
                         })
                     }).addTo(map);
                 });
@@ -156,3 +164,4 @@
     </script>
 </body>
 </html>
+
