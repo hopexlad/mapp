@@ -93,23 +93,50 @@
         };
 
         var imageOverlay;
-        var markers = [];
+        var activeCircle = null;
+        var activeMarker = null;
 
         function loadFloor() {
             if (imageOverlay) map.removeLayer(imageOverlay);
-            markers.forEach(marker => map.removeLayer(marker));
+            if (activeCircle) map.removeLayer(activeCircle);
+            if (activeMarker) map.removeLayer(activeMarker);
 
             imageOverlay = L.imageOverlay(campus.image, campus.bounds).addTo(map);
             map.fitBounds(campus.bounds);
 
-            markers = campus.markers.map(room => {
-                return L.marker(room.coords, {
-                    icon: L.divIcon({
-                        className: 'invisible-marker',
-                        iconSize: [1, 1] // Invisible but clickable
-                    })
-                }).addTo(map).on('click', function() {
-                    L.popup().setLatLng(room.coords).setContent(`<b>${room.name}</b>`).openOn(map);
+            campus.markers.forEach(room => {
+                var circle = L.circleMarker(room.coords, {
+                    radius: 12, // Larger Clickable Area
+                    color: "transparent",
+                    fillColor: "transparent",
+                    fillOpacity: 0.5
+                }).addTo(map);
+
+                circle.on('click', function () {
+                    // Remove Previous Highlight and Pin
+                    if (activeCircle) {
+                        activeCircle.setStyle({ color: "transparent", fillColor: "transparent" });
+                        map.removeLayer(activeMarker);
+                    }
+
+                    // Highlight the Clicked Room
+                    circle.setStyle({ color: "blue", fillColor: "yellow", fillOpacity: 0.8 });
+                    activeCircle = circle;
+
+                    // Add Pin Image
+                    activeMarker = L.marker(room.coords, {
+                        icon: L.icon({
+                            iconUrl: 'pin.png',
+                            iconSize: [30, 40], // Pin Size
+                            iconAnchor: [15, 40] // Bottom center
+                        })
+                    }).addTo(map);
+
+                    // Show Room Name
+                    L.popup()
+                        .setLatLng(room.coords)
+                        .setContent(`<b>${room.name}</b>`)
+                        .openOn(map);
                 });
             });
         }
