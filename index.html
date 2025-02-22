@@ -3,163 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KPRCAS Campus Map</title>
+    <title>Interactive College Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: Arial, sans-serif; }
         #map { width: 100vw; height: 100vh; }
 
-        /* UI Buttons */
-        .ui-container {
+        /* Sidebar Navigation */
+        .sidebar {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            left: 0;
+            top: 0;
+            width: 220px;
+            height: 100vh;
+            background: #222;
+            padding: 15px;
+            color: white;
             display: flex;
             flex-direction: column;
-            z-index: 1001;
+            transition: 0.3s;
         }
 
-        .button {
-            margin: 5px 0;
+        .sidebar h2 { text-align: center; font-size: 18px; }
+        .sidebar button {
+            background: #ff6b00;
+            border: none;
             padding: 10px;
-            width: 80px;
+            margin: 5px 0;
+            color: white;
+            cursor: pointer;
+            width: 100%;
+            border-radius: 5px;
             text-align: center;
-            background: green;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
         }
-
-        /* Search Bar */
-        .search-container {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1002;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 5px;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-        }
-
-        #search-input {
-            width: 200px;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        #search-button {
-            margin-left: 5px;
-            padding: 5px 10px;
-            border: none;
-            background: green;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-        }
+        .sidebar button:hover { background: #ff8800; }
     </style>
 </head>
 <body>
-
-    <!-- Search Bar -->
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search rooms..." />
-        <button id="search-button">Search</button>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Campus Map</h2>
+        <button onclick="toggleRooms()">Toggle Rooms</button>
+        <button onclick="toggleFloor()">Toggle Floor</button>
     </div>
 
-    <!-- Right Side UI Buttons -->
-    <div class="ui-container">
-        <button class="button" onclick="toggleRooms()">Rooms</button>
-    </div>
-
+    <!-- Map Container -->
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         var map = L.map('map', { minZoom: -2, maxZoom: 4, crs: L.CRS.Simple });
 
-        var campus = {
-            image: 'campus.png',
-            bounds: [[0, 0], [302, 754]],
-            markers: [
-                { name: "Food Court 1", coords: [214.83, 717.00] },
-                { name: "Food Court 2", coords: [66.75, 717.00] },
-                { name: "Auditorium 1", coords: [250.85, 601.00] },
-                { name: "Auditorium 2", coords: [54.75, 601.00] },
-                { name: "Seminar Hall", coords: [154.80, 610.00] },
-                { name: "Hostellers Mess", coords: [111.78, 603.00] },
-                { name: "Dining Area", coords: [190.82, 603.00] },
-                { name: "Lab 4", coords: [201.83, 514.00] },
-                { name: "Lab 3", coords: [102.77, 512.00] },
-                { name: "Library", coords: [47.74, 512.00] },
-                { name: "NCC", coords: [33.74, 471.00] },
-                { name: "OAT", coords: [150.80, 429.00] },
-                { name: "Lab 5", coords: [264.86, 482.00] },
-                { name: "Physical Education Room", coords: [263.86, 385.00] },
-                { name: "Stock Room", coords: [264.84, 353.00] },
-                { name: "Transport Office", coords: [262.86, 329.00] },
-                { name: "Sick Room", coords: [206.83, 351.00] },
-                { name: "CG114", coords: [181.82, 355.00] },
-                { name: "CG113", coords: [119.78, 354.00] },
-                { name: "CG112", coords: [93.77, 354.00] },
-                { name: "Lab 1", coords: [38.74, 377.00] },
-                { name: "Zig-Zag", coords: [271.87, 263.00] },
-                { name: "Boys Restroom", coords: [33.87, 306.50] },
-                { name: "Girls Restroom", coords: [35.87, 233.00] },
-                { name: "Admission Office", coords: [263.99, 193.00] },
-                { name: "Falcon Hall", coords: [264.49, 152.50] },
-                { name: "Office", coords: [196.46, 171.00] },
-                { name: "Exam Cell", coords: [107.91, 172.50] },
-                { name: "Guest Waiting", coords: [33.87, 152.50] },
-                { name: "Oasis", coords: [33.87, 65.00] },
-                { name: "Placement Waiting Room", coords: [225.98, 24.00] },
-                { name: "Master Board Room", coords: [109.41, 16.00] },
-                { name: "Oak Leaf", coords: [74.89, 18.00] },
-                { name: "Principal Office", coords: [36.87, 11.50] },
-                { name: "Secretary Office", coords: [34.37, 32.00] }
-            ]
+        var floors = {
+            ground: {
+                image: 'campus.png',
+                bounds: [[0, 0], [302, 754]],
+                markers: [
+                    { name: "Food Court 1", coords: [214.83, 717.00] },
+                    { name: "Food Court 2", coords: [66.75, 717.00] },
+                    { name: "Auditorium 1", coords: [250.85, 601.00] },
+                    { name: "Auditorium 2", coords: [54.75, 601.00] },
+                    { name: "Seminar Hall", coords: [154.80, 610.00] },
+                    { name: "Hostellers Mess", coords: [111.78, 603.00] },
+                    { name: "Mess", coords: [190.82, 603.00] },
+                    { name: "Lab 4", coords: [201.83, 514.00] },
+                    { name: "Lab 3", coords: [102.77, 512.00] },
+                    { name: "Library", coords: [47.74, 512.00] },
+                    { name: "NCC", coords: [33.74, 471.00] },
+                    { name: "OAT", coords: [150.80, 429.00] },
+                    { name: "Lab 5", coords: [264.86, 482.00] },
+                    { name: "PEA", coords: [263.86, 385.00] },
+                    { name: "Stock Room", coords: [264.84, 353.00] },
+                    { name: "Transport Office", coords: [262.86, 329.00] },
+                    { name: "Sick Room", coords: [206.83, 351.00] }
+                ]
+            },
+            first: {
+                image: 'floor1.png',
+                bounds: [[0, 0], [301, 528]],
+                markers: [
+                    { name: "BcomPA and (B&I)dep", coords: [264.50, 187.00] },
+                    { name: "III(B&I)", coords: [263.50, 139.00] },
+                    { name: "II(B&I)", coords: [261.75, 70.00] },
+                    { name: "I(B&I)", coords: [262.75, 42.25] },
+                    { name: "AF105", coords: [217.75, 15.00] },
+                    { name: "AF106", coords: [184.50, 15.75] },
+                    { name: "Admin Office", coords: [97.00, 17.00] },
+                    { name: "AF108", coords: [34.50, 40.50] },
+                    { name: "AF109", coords: [33.00, 71.00] },
+                    { name: "3Bcom.PA", coords: [34.50, 138.50] },
+                    { name: "AF111", coords: [36.00, 169.25] },
+                    { name: "Girls Restroom", coords: [21.00, 217.00] },
+                    { name: "Boys Restroom", coords: [24.00, 309.50] },
+                    { name: "Lab 10", coords: [37.50, 377.50] },
+                    { name: "Lab 9", coords: [39.50, 484.50] },
+                    { name: "Lab 8", coords: [96.50, 514.50] },
+                    { name: "Lab 7", coords: [160.00, 514.50] },
+                    { name: "Lab 6", coords: [208.00, 513.50] }
+                ]
+            }
         };
 
-        var imageOverlay = L.imageOverlay(campus.image, campus.bounds).addTo(map);
-        map.fitBounds(campus.bounds);
+        var currentFloor = 'ground';
+        var imageOverlay = L.imageOverlay(floors[currentFloor].image, floors[currentFloor].bounds).addTo(map);
+        map.fitBounds(floors[currentFloor].bounds);
 
-        var roomMarkers = [];
-        var icon = L.icon({ iconUrl: 'ok.png', iconSize: [20, 20] });
-
-        function toggleRooms() {
-            if (roomMarkers.length) {
-                roomMarkers.forEach(marker => map.removeLayer(marker));
-                roomMarkers = [];
-            } else {
-                campus.markers.forEach(room => {
-                    var marker = L.marker(room.coords, { icon }).addTo(map)
-                        .bindTooltip(room.name, { permanent: false, direction: 'top' });
-                    roomMarkers.push(marker);
-                });
-            }
+        function toggleFloor() {
+            currentFloor = currentFloor === 'ground' ? 'first' : 'ground';
+            map.removeLayer(imageOverlay);
+            imageOverlay = L.imageOverlay(floors[currentFloor].image, floors[currentFloor].bounds).addTo(map);
+            map.fitBounds(floors[currentFloor].bounds);
         }
-
-        function searchRoom() {
-            var searchValue = document.getElementById("search-input").value.toLowerCase();
-            var foundRoom = campus.markers.find(room => room.name.toLowerCase().includes(searchValue));
-
-            if (foundRoom) {
-                map.setView(foundRoom.coords, 2);
-                var marker = L.marker(foundRoom.coords, { icon }).addTo(map)
-                    .bindTooltip(foundRoom.name, { permanent: true, direction: 'top' });
-                
-                setTimeout(() => map.removeLayer(marker), 3000);
-            } else {
-                alert("Room not found!");
-            }
-        }
-
-        document.getElementById("search-button").addEventListener("click", searchRoom);
     </script>
 </body>
 </html>
-
