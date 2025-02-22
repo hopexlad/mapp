@@ -30,18 +30,6 @@
             cursor: pointer;
             border-radius: 5px;
         }
-
-        /* Transparent Label Style */
-        .room-label {
-            background: rgba(255, 255, 255, 0.7); /* Slightly visible */
-            padding: 2px 5px;
-            border-radius: 3px;
-            font-weight: bold;
-            color: black;
-            font-size: 12px;
-            white-space: nowrap;
-            display: none; /* Hidden by default */
-        }
     </style>
 </head>
 <body>
@@ -57,7 +45,6 @@
     <script>
         var map = L.map('map', { minZoom: -2, maxZoom: 4, crs: L.CRS.Simple });
 
-        // Campus Floor Data
         var campus = {
             image: 'campus.png',
             bounds: [[0, 0], [302, 754]],
@@ -103,7 +90,6 @@
 
         var imageOverlay;
         var activeDot = null;
-        var dots = [];
 
         function loadCampus() {
             if (imageOverlay) map.removeLayer(imageOverlay);
@@ -120,26 +106,18 @@
                     fillOpacity: 0.5
                 }).addTo(map);
 
-                dots.push(dot);
-
-                var label = L.divIcon({
-                    className: 'room-label',
-                    html: `<b>${room.name}</b>`,
-                    iconSize: [100, 20]
-                });
-
-                var labelMarker = L.marker(room.coords, { icon: label }).addTo(map);
-                labelMarker.getElement().style.display = 'none'; // Hide label initially
+                // Bind Tooltip for Room Name
+                dot.bindTooltip(room.name, { permanent: false, direction: 'top', offset: [0, -10] });
 
                 dot.on('mouseover', function () {
                     dot.setStyle({ fillOpacity: 1 });
-                    labelMarker.getElement().style.display = 'block';
+                    dot.openTooltip();
                 });
 
                 dot.on('mouseout', function () {
-                    dot.setStyle({ fillOpacity: 0.5 });
                     if (activeDot !== dot) {
-                        labelMarker.getElement().style.display = 'none';
+                        dot.setStyle({ fillOpacity: 0.5 });
+                        dot.closeTooltip();
                     }
                 });
 
@@ -148,20 +126,18 @@
                         activeDot.setStyle({ radius: 5, fillOpacity: 0.5 });
                     }
 
-                    dot.setStyle({ radius: 3, fillOpacity: 1 });
+                    dot.setStyle({ radius: 7, fillOpacity: 1 });
                     activeDot = dot;
-
-                    labelMarker.getElement().style.display = 'block';
+                    dot.openTooltip();
                 });
             });
 
             map.on('zoomend', function () {
                 var zoom = map.getZoom();
-                dots.forEach(dot => {
-                    if (zoom < 0 && Math.random() > 0.5) {
-                        dot.setOpacity(0);
-                    } else {
-                        dot.setOpacity(1);
+                campus.markers.forEach((room, index) => {
+                    var dot = map._layers[Object.keys(map._layers)[index + 2]]; // Adjust index based on added layers
+                    if (dot) {
+                        dot.setStyle({ radius: zoom > 0 ? 7 : 3 });
                     }
                 });
             });
