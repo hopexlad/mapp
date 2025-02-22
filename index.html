@@ -124,7 +124,7 @@
 
         var markers = {};
         rooms.forEach(room => {
-            var marker = L.marker(room.coords, { icon: L.icon({ iconUrl: 'marker-icon.png', iconSize: [15, 25] }) }).addTo(map).bindPopup(`<b>${room.name}</b>`);
+            var marker = L.marker(room.coords, { icon: L.icon({ iconUrl: 'marker-icon.png', iconSize: [12, 20] }) }).addTo(map).bindPopup(`<b>${room.name}</b>`);
             markers[room.name.toLowerCase()] = marker;
         });
     </script>
