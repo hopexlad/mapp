@@ -31,14 +31,14 @@
             border-radius: 5px;
         }
 
-        /* Custom Dot Style */
-        .dot {
-            width: 10px;
-            height: 10px;
-            background-color: blue;
-            border-radius: 50%;
-            position: absolute;
-            transform: translate(-50%, -50%);
+        /* Transparent Label Style */
+        .room-label {
+            background: rgba(255, 255, 255, 0.2); /* Transparent */
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+            color: black;
+            display: inline-block;
         }
     </style>
 </head>
@@ -102,6 +102,7 @@
         var imageOverlay;
         var activeShape = null;
         var activeLabel = null;
+        var dots = [];
 
         function loadCampus() {
             if (imageOverlay) map.removeLayer(imageOverlay);
@@ -120,16 +121,18 @@
                     fillOpacity: 0.5
                 }).addTo(map);
 
+                dots.push(dot); // Store dot for later reference
+
                 // Label initially hidden
                 var label = L.divIcon({
                     className: 'room-label',
-                    html: `<b style="color: black; background: white; padding: 2px 5px; border-radius: 3px;">${room.name}</b>`,
+                    html: `<b>${room.name}</b>`,
                     iconSize: [100, 20]
                 });
 
-                var labelMarker = L.marker(room.coords, { icon: label, opacity: 0 }).addTo(map); // Initially hidden
+                var labelMarker = L.marker(room.coords, { icon: label, opacity: 0 }).addTo(map);
 
-                // Hover: Darkens the dot and shows label
+                // Hover: Darkens dot and shows label
                 dot.on('mouseover', function () {
                     dot.setStyle({ fillOpacity: 1 });
                     labelMarker.setOpacity(1);
@@ -144,32 +147,25 @@
                 });
 
                 dot.on('click', function () {
-                    // Remove previous selection
-                    if (activeShape) {
-                        activeShape.setStyle({ radius: 5, fillOpacity: 0.5 });
-                    }
-                    if (activeLabel) {
-                        activeLabel.setOpacity(0);
-                    }
+                    if (activeShape) activeShape.setStyle({ radius: 5, fillOpacity: 0.5 });
+                    if (activeLabel) activeLabel.setOpacity(0);
 
-                    // Shrink dot size when clicked
                     dot.setStyle({ radius: 3, fillOpacity: 1 });
-
-                    // Keep label visible
                     labelMarker.setOpacity(1);
 
-                    // Set active
                     activeShape = dot;
                     activeLabel = labelMarker;
                 });
+            });
 
-                // Zoom-dependent label visibility
-                map.on('zoomend', function () {
-                    var zoom = map.getZoom();
-                    if (zoom < 0) {
-                        labelMarker.setOpacity(0);
+            // Randomly hide dots when zooming out
+            map.on('zoomend', function () {
+                var zoom = map.getZoom();
+                dots.forEach(dot => {
+                    if (zoom < 0 && Math.random() > 0.5) {
+                        dot.setOpacity(0);
                     } else {
-                        labelMarker.setOpacity(1);
+                        dot.setOpacity(1);
                     }
                 });
             });
