@@ -161,7 +161,7 @@
             map.fitBounds(floor.bounds);
 
             markers = floor.markers.map(room => {
-                return L.marker(room.coords, { icon: L.icon({ iconUrl: 'mappin.png', iconSize: [25, 41], iconAnchor: [12, 41] }) })
+                return L.marker(room.coords, { icon: L.icon({ iconUrl: 'pin.png', iconSize: [25, 41], iconAnchor: [12, 41] }) })
                     .addTo(map).bindPopup(`<b>${room.name}</b>`);
             });
         }
