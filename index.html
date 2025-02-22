@@ -23,24 +23,24 @@
     </style>
 </head>
 <body>
+
     <div id="map"></div>
     <div id="coordinates">Move your cursor over the map</div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         var map = L.map('map', {
-            minZoom: -2,  
-            maxZoom: 4,   
-            crs: L.CRS.Simple  
+            minZoom: -2,
+            maxZoom: 4,
+            crs: L.CRS.Simple
         });
 
-        var imageWidth = 754;  
-        var imageHeight = 302; 
+        var imageWidth = 754;
+        var imageHeight = 302;
         var bounds = [[0, 0], [302, 754]];
 
-        var imageUrl = 'campus.png';  
+        var imageUrl = 'campus.png';
         var image = L.imageOverlay(imageUrl, bounds).addTo(map);
-
         map.fitBounds(bounds);
         map.setView([302 / 2, 754 / 2], 0);
 
@@ -50,29 +50,46 @@
             document.getElementById('coordinates').innerHTML = `Latitude: ${lat}, Longitude: ${lng}`;
         });
 
-        map.on('click', function(e) {
-            var lat = e.latlng.lat.toFixed(2);
-            var lng = e.latlng.lng.toFixed(2);
-
-            L.popup()
-                .setLatLng(e.latlng)
-                .setContent(`<b>Latitude:</b> ${lat}<br><b>Longitude:</b> ${lng}`)
-                .openOn(map);
-        });
-
-        // ** Room Markers **
         var rooms = [
-            { name: "Food Court-1", lat: 214.83, lng: 717.00 },
-            { name: "Food Court-2", lat: 66.75, lng: 717.00 },
-            { name: "Zig-Zag", lat: 217.87, lng: 263.00},
-            { name: "Library", lat: 47.74, lng: 512.00 }
+            { name: "Fc1", lat: 214.83, lng: 717.00 },
+            { name: "Fc2", lat: 66.75, lng: 717.00 },
+            { name: "Aud1", lat: 250.85, lng: 601.00 },
+            { name: "Aud2", lat: 54.75, lng: 601.00 },
+            { name: "Sem Hall", lat: 154.80, lng: 610.00 },
+            { name: "Hostellers Mess", lat: 111.78, lng: 603.00 },
+            { name: "Mess", lat: 190.82, lng: 603.00 },
+            { name: "Lab 4", lat: 201.83, lng: 514.00 },
+            { name: "Lab 3", lat: 102.77, lng: 512.00 },
+            { name: "Library", lat: 47.74, lng: 512.00 },
+            { name: "NCC", lat: 33.74, lng: 471.00 },
+            { name: "OAT", lat: 150.80, lng: 429.00 },
+            { name: "Lab 5", lat: 264.86, lng: 482.00 },
+            { name: "PE", lat: 263.86, lng: 385.00 },
+            { name: "Stock", lat: 264.84, lng: 353.00 },
+            { name: "Transport", lat: 262.86, lng: 329.00 },
+            { name: "Sick", lat: 206.83, lng: 351.00 },
+            { name: "CG114", lat: 181.82, lng: 355.00 },
+            { name: "CG113", lat: 119.78, lng: 354.00 },
+            { name: "CG112", lat: 93.77, lng: 354.00 },
+            { name: "Lab 1", lat: 38.74, lng: 377.00 },
+            { name: "ZZ", lat: 271.87, lng: 263.00 },
+            { name: "Boys Room", lat: 33.87, lng: 306.50 },
+            { name: "Girls Room", lat: 35.87, lng: 233.00 },
+            { name: "Admissions Office", lat: 263.99, lng: 193.00 },
+            { name: "Falcon", lat: 264.49, lng: 152.50 },
+            { name: "Office", lat: 196.46, lng: 171.00 },
+            { name: "Exam Classroom", lat: 107.91, lng: 172.50 },
+            { name: "Guest Waiting", lat: 33.87, lng: 152.50 },
+            { name: "Oasis", lat: 33.87, lng: 65.00 }
         ];
 
         rooms.forEach(room => {
-            L.marker([room.lat, room.lng]).addTo(map)
-                .bindPopup(`<b>${room.name}</b><br>Lat: ${room.lat}, Lng: ${room.lng}`);
+            L.marker([room.lat, room.lng])
+                .addTo(map)
+                .bindPopup(`<b>${room.name}</b>`);
         });
     </script>
 </body>
 </html>
+
 
