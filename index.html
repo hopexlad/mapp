@@ -32,11 +32,11 @@
             display: flex;
             gap: 5px;
         }
-        #search-box {
-            width: 200px;
+        #search-box, #start-location, #end-location {
+            width: 150px;
             padding: 5px;
         }
-        #reset-button {
+        #reset-button, #navigate-button {
             background: red;
             color: white;
             border: none;
@@ -51,6 +51,13 @@
     <div id="search-container">
         <input type="text" id="search-box" placeholder="Search location...">
         <button onclick="searchLocation()">Search</button>
+        <select id="start-location">
+            <option value="">Select Start</option>
+        </select>
+        <select id="end-location">
+            <option value="">Select Destination</option>
+        </select>
+        <button id="navigate-button" onclick="navigate()">Go</button>
         <button id="reset-button" onclick="resetView()">Reset</button>
     </div>
     <div id="map"></div>
@@ -94,24 +101,16 @@
             { name: "Stock Room", coords: [264.84, 353.00] },
             { name: "Transport Office", coords: [262.86, 329.00] },
             { name: "Sick Bay", coords: [206.83, 351.00] },
-            { name: "CG114", coords: [181.82, 355.00] },
-            { name: "CG113", coords: [119.78, 354.00] },
-            { name: "CG112", coords: [93.77, 354.00] },
-            { name: "Lab 1", coords: [38.74, 377.00] },
-            { name: "Boys Restroom", coords: [33.87, 306.50] },
-            { name: "Girls Restroom", coords: [35.87, 233.00] },
-            { name: "Admissions Office", coords: [263.99, 193.00] },
-            { name: "Falcon", coords: [264.49, 152.50] },
-            { name: "Office", coords: [196.46, 171.00] },
-            { name: "Exam Cell", coords: [107.91, 172.50] },
-            { name: "Guest Waiting", coords: [33.87, 152.50] },
-            { name: "Oasis", coords: [33.87, 65.00] }
         ];
 
         var markers = {};
         rooms.forEach(room => {
             var marker = L.marker(room.coords).addTo(map).bindPopup(`<b>${room.name}</b>`);
             markers[room.name.toLowerCase()] = marker;
+
+            var option = new Option(room.name, room.name.toLowerCase());
+            document.getElementById("start-location").add(option.cloneNode(true));
+            document.getElementById("end-location").add(option);
         });
 
         function searchLocation() {
@@ -124,8 +123,22 @@
             }
         }
 
+        function navigate() {
+            var start = document.getElementById("start-location").value;
+            var end = document.getElementById("end-location").value;
+            if (!start || !end) {
+                alert("Please select both start and destination.");
+                return;
+            }
+            var latlngs = [markers[start].getLatLng(), markers[end].getLatLng()];
+            if (window.routeLine) map.removeLayer(window.routeLine);
+            window.routeLine = L.polyline(latlngs, { color: 'blue', weight: 5 }).addTo(map);
+            map.fitBounds(window.routeLine.getBounds());
+        }
+
         function resetView() {
             map.setView([151, 377], 0);
+            if (window.routeLine) map.removeLayer(window.routeLine);
         }
     </script>
 
