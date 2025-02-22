@@ -29,10 +29,20 @@
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
             z-index: 1000;
+            display: flex;
+            gap: 5px;
         }
         #search-box {
             width: 200px;
             padding: 5px;
+        }
+        #reset-button {
+            background: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -41,6 +51,7 @@
     <div id="search-container">
         <input type="text" id="search-box" placeholder="Search location...">
         <button onclick="searchLocation()">Search</button>
+        <button id="reset-button" onclick="resetView()">Reset</button>
     </div>
     <div id="map"></div>
     <div id="coordinates">Move your cursor over the map</div>
@@ -111,6 +122,10 @@
             } else {
                 alert("Location not found");
             }
+        }
+
+        function resetView() {
+            map.setView([151, 377], 0);
         }
     </script>
 
