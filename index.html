@@ -30,6 +30,35 @@
             cursor: pointer;
             border-radius: 5px;
         }
+
+        /* Search Bar */
+        .search-container {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1002;
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 5px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+        }
+        .search-input {
+            padding: 5px;
+            width: 200px;
+            border: none;
+            outline: none;
+        }
+        .search-button {
+            padding: 5px 10px;
+            background: blue;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -38,6 +67,12 @@
     <div class="buttons-container">
         <button class="button" onclick="loadCampus()">Campus</button>
         <button class="button" onclick="toggleRooms()">Rooms</button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search for a room...">
+        <button class="search-button" onclick="searchRoom()">Search</button>
     </div>
 
     <div id="map"></div>
@@ -69,29 +104,14 @@
                 { name: "Sick Room", coords: [206.83, 351.00] },
                 { name: "CG114", coords: [181.82, 355.00] },
                 { name: "CG113", coords: [119.78, 354.00] },
-                { name: "CG112", coords: [93.77, 354.00] },
-                { name: "Lab 1", coords: [38.74, 377.00] },
-                { name: "Zig-Zag", coords: [271.87, 263.00] },
-                { name: "Boys Restroom", coords: [33.87, 306.50] },
-                { name: "Girls Restroom", coords: [35.87, 233.00] },
-                { name: "Admission Office", coords: [263.99, 193.00] },
-                { name: "Falcon Hall", coords: [264.49, 152.50] },
-                { name: "Office", coords: [196.46, 171.00] },
-                { name: "Exam Cell", coords: [107.91, 172.50] },
-                { name: "Guest Waiting", coords: [33.87, 152.50] },
-                { name: "Oasis", coords: [33.87, 65.00] },
-                { name: "Placement Waiting Room", coords: [225.98, 24.00] },
-                { name: "Master Board Room", coords: [109.41, 16.00] },
-                { name: "Oak Leaf", coords: [74.89, 18.00] },
-                { name: "Guest Waiting Hall", coords: [35.87, 63.00] },
-                { name: "Principal Office", coords: [36.87, 11.50] },
-                { name: "Secretary Office", coords: [34.37, 32.00] }
+                { name: "CG112", coords: [93.77, 354.00] }
             ]
         };
 
         var imageOverlay;
         var markersLayer = L.layerGroup();
         var roomsVisible = true;
+        var roomMarkers = {}; // Store markers for searching
 
         function loadCampus() {
             if (imageOverlay) map.removeLayer(imageOverlay);
@@ -106,41 +126,57 @@
                 map.removeLayer(markersLayer);
             } else {
                 markersLayer = L.layerGroup();
-                campus.markers.forEach(room => {
-                    var dot = L.circleMarker(room.coords, {
-                        radius: 5,
-                        color: "grey",
-                        fillColor: "grey",
-                        fillOpacity: 0.7
-                    }).addTo(markersLayer);
+                roomMarkers = {}; // Reset marker storage
 
-                    var tooltip = dot.bindTooltip(room.name, {
+                campus.markers.forEach(room => {
+                    var icon = L.icon({
+                        iconUrl: 'ok.png',
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    });
+
+                    var marker = L.marker(room.coords, { icon: icon }).addTo(markersLayer);
+
+                    var tooltip = marker.bindTooltip(room.name, {
                         permanent: false, 
                         direction: 'top', 
                         offset: [0, -10],
                         opacity: 0.8
                     });
 
-                    dot.on('mouseover', function () {
-                        dot.setStyle({ fillOpacity: 1.0 });
+                    marker.on('mouseover', function () {
                         tooltip.openTooltip();
                     });
 
-                    dot.on('mouseout', function () {
-                        dot.setStyle({ fillOpacity: 0.7 });
+                    marker.on('mouseout', function () {
                         setTimeout(() => tooltip.closeTooltip(), 200);
                     });
 
-                    dot.on('click', function () {
-                        dot.setStyle({ fillOpacity: 1.0 });
+                    marker.on('click', function () {
                         tooltip.openTooltip();
                     });
+
+                    roomMarkers[room.name.toLowerCase()] = marker; // Store marker for search
                 });
 
                 map.addLayer(markersLayer);
             }
 
             roomsVisible = !roomsVisible;
+        }
+
+        function searchRoom() {
+            var query = document.getElementById("searchInput").value.trim().toLowerCase();
+            if (query === "") return;
+
+            var foundMarker = roomMarkers[query];
+
+            if (foundMarker) {
+                map.setView(foundMarker.getLatLng(), 2);
+                foundMarker.openTooltip();
+            } else {
+                alert("Room not found!");
+            }
         }
 
         loadCampus();
