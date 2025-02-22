@@ -29,20 +29,19 @@
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
+        console.log("Leaflet script loaded!");
+
         var map = L.map('map', {
-            minZoom: -2,
-            maxZoom: 4,
-            crs: L.CRS.Simple
+            minZoom: -2,  
+            maxZoom: 4,   
+            crs: L.CRS.Simple  
         });
 
-        var imageWidth = 754;
-        var imageHeight = 302;
         var bounds = [[0, 0], [302, 754]];
-
-        var imageUrl = 'campus.png';
-        var image = L.imageOverlay(imageUrl, bounds).addTo(map);
+        var imageUrl = 'campus.png';  
+        L.imageOverlay(imageUrl, bounds).addTo(map);
         map.fitBounds(bounds);
-        map.setView([302 / 2, 754 / 2], 0);
+        map.setView([151, 377], 0);
 
         map.on('mousemove', function(e) {
             var lat = e.latlng.lat.toFixed(2);
@@ -50,46 +49,62 @@
             document.getElementById('coordinates').innerHTML = `Latitude: ${lat}, Longitude: ${lng}`;
         });
 
+        // **Icons**
+        var icons = {
+            food: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/1046/1046784.png', iconSize: [25, 25] }),
+            auditorium: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/4333/4333609.png', iconSize: [25, 25] }),
+            book: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/1048/1048953.png', iconSize: [25, 25] }),
+            restroom: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/535/535239.png', iconSize: [25, 25] }),
+            medical: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/2921/2921822.png', iconSize: [25, 25] }),
+            office: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/2910/2910779.png', iconSize: [25, 25] }),
+            transport: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/2991/2991103.png', iconSize: [25, 25] }),
+            gym: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/3107/3107351.png', iconSize: [25, 25] }),
+            default: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [20, 20] })
+        };
+
+        // **Room Markers**
         var rooms = [
-            { name: "Fc1", lat: 214.83, lng: 717.00 },
-            { name: "Fc2", lat: 66.75, lng: 717.00 },
-            { name: "Aud1", lat: 250.85, lng: 601.00 },
-            { name: "Aud2", lat: 54.75, lng: 601.00 },
-            { name: "Sem Hall", lat: 154.80, lng: 610.00 },
-            { name: "Hostellers Mess", lat: 111.78, lng: 603.00 },
-            { name: "Mess", lat: 190.82, lng: 603.00 },
-            { name: "Lab 4", lat: 201.83, lng: 514.00 },
-            { name: "Lab 3", lat: 102.77, lng: 512.00 },
-            { name: "Library", lat: 47.74, lng: 512.00 },
-            { name: "NCC", lat: 33.74, lng: 471.00 },
-            { name: "OAT", lat: 150.80, lng: 429.00 },
-            { name: "Lab 5", lat: 264.86, lng: 482.00 },
-            { name: "PE", lat: 263.86, lng: 385.00 },
-            { name: "Stock", lat: 264.84, lng: 353.00 },
-            { name: "Transport", lat: 262.86, lng: 329.00 },
-            { name: "Sick", lat: 206.83, lng: 351.00 },
-            { name: "CG114", lat: 181.82, lng: 355.00 },
-            { name: "CG113", lat: 119.78, lng: 354.00 },
-            { name: "CG112", lat: 93.77, lng: 354.00 },
-            { name: "Lab 1", lat: 38.74, lng: 377.00 },
-            { name: "ZZ", lat: 271.87, lng: 263.00 },
-            { name: "Boys Room", lat: 33.87, lng: 306.50 },
-            { name: "Girls Room", lat: 35.87, lng: 233.00 },
-            { name: "Admissions Office", lat: 263.99, lng: 193.00 },
-            { name: "Falcon", lat: 264.49, lng: 152.50 },
-            { name: "Office", lat: 196.46, lng: 171.00 },
-            { name: "Exam Classroom", lat: 107.91, lng: 172.50 },
-            { name: "Guest Waiting", lat: 33.87, lng: 152.50 },
-            { name: "Oasis", lat: 33.87, lng: 65.00 }
+            { name: "Food Court 1", coords: [214.83, 717.00], icon: icons.food },
+            { name: "Food Court 2", coords: [66.75, 717.00], icon: icons.food },
+            { name: "Auditorium 1", coords: [250.85, 601.00], icon: icons.auditorium },
+            { name: "Auditorium 2", coords: [54.75, 601.00], icon: icons.auditorium },
+            { name: "Seminar Hall", coords: [154.80, 610.00], icon: icons.auditorium },
+            { name: "Hostellers Mess", coords: [111.78, 603.00], icon: icons.food },
+            { name: "Mess", coords: [190.82, 603.00], icon: icons.food },
+            { name: "Lab 4", coords: [201.83, 514.00], icon: icons.book },
+            { name: "Lab 3", coords: [102.77, 512.00], icon: icons.book },
+            { name: "Library", coords: [47.74, 512.00], icon: icons.book },
+            { name: "NCC", coords: [33.74, 471.00], icon: icons.default },
+            { name: "OAT", coords: [150.80, 429.00], icon: icons.auditorium },
+            { name: "Lab 5", coords: [264.86, 482.00], icon: icons.book },
+            { name: "PE", coords: [263.86, 385.00], icon: icons.gym },
+            { name: "Stock Room", coords: [264.84, 353.00], icon: icons.transport },
+            { name: "Transport Office", coords: [262.86, 329.00], icon: icons.transport },
+            { name: "Sick Bay", coords: [206.83, 351.00], icon: icons.medical },
+            { name: "CG114", coords: [181.82, 355.00], icon: icons.default },
+            { name: "CG113", coords: [119.78, 354.00], icon: icons.default },
+            { name: "CG112", coords: [93.77, 354.00], icon: icons.default },
+            { name: "Lab 1", coords: [38.74, 377.00], icon: icons.book },
+            { name: "Boys Restroom", coords: [33.87, 306.50], icon: icons.restroom },
+            { name: "Girls Restroom", coords: [35.87, 233.00], icon: icons.restroom },
+            { name: "Admissions Office", coords: [263.99, 193.00], icon: icons.office },
+            { name: "Falcon", coords: [264.49, 152.50], icon: icons.default },
+            { name: "Office", coords: [196.46, 171.00], icon: icons.office },
+            { name: "Exam Cell", coords: [107.91, 172.50], icon: icons.book },
+            { name: "Guest Waiting", coords: [33.87, 152.50], icon: icons.default },
+            { name: "Oasis", coords: [33.87, 65.00], icon: icons.default }
         ];
 
         rooms.forEach(room => {
-            L.marker([room.lat, room.lng])
+            L.marker(room.coords, { icon: room.icon })
                 .addTo(map)
                 .bindPopup(`<b>${room.name}</b>`);
         });
+
     </script>
+
 </body>
 </html>
+
 
 
