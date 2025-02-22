@@ -100,9 +100,9 @@
 
             campus.markers.forEach(room => {
                 var dot = L.circleMarker(room.coords, {
-                    radius: 3.5,
-                    color: "dark grey",
-                    fillColor: "dark grey",
+                    radius: 4,
+                    color: "grey",
+                    fillColor: "grey",
                     fillOpacity: 1.0
                 }).addTo(map);
 
@@ -110,23 +110,23 @@
                 dot.bindTooltip(room.name, { permanent: false, direction: 'top', offset: [0, -10] });
 
                 dot.on('mouseover', function () {
-                    dot.setStyle({ fillOpacity: 1 });
+                    dot.setStyle({ fillOpacity: 1.0 });
                     dot.openTooltip();
                 });
 
                 dot.on('mouseout', function () {
                     if (activeDot !== dot) {
-                        dot.setStyle({ fillOpacity: 0.5 });
+                        dot.setStyle({ fillOpacity: 1.0 });
                         dot.closeTooltip();
                     }
                 });
 
                 dot.on('click', function () {
                     if (activeDot) {
-                        activeDot.setStyle({ radius: 5, fillOpacity: 1.0 });
+                        activeDot.setStyle({ radius: 4, fillOpacity: 1.0 });
                     }
 
-                    dot.setStyle({ radius: 5, fillOpacity: 1 });
+                    dot.setStyle({ radius: 4, fillOpacity: 1 });
                     activeDot = dot;
                     dot.openTooltip();
                 });
@@ -137,7 +137,7 @@
                 campus.markers.forEach((room, index) => {
                     var dot = map._layers[Object.keys(map._layers)[index + 2]]; // Adjust index based on added layers
                     if (dot) {
-                        dot.setStyle({ radius: zoom > 0 ? 7 : 3 });
+                        dot.setStyle({ radius: zoom > 0 ? 5 : 3 });
                     }
                 });
             });
