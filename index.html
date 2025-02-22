@@ -123,9 +123,9 @@
         ];
 
         var customIcon = L.icon({
-            iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/ec/Red_pog.svg', // Red pin icon
-            iconSize: [30, 40], 
-            iconAnchor: [15, 40] 
+            iconUrl: 'mappin.png', // Ensure this file exists in your project directory
+            iconSize: [25, 41], 
+            iconAnchor: [12, 41]
         });
 
         var markers = {};
@@ -133,7 +133,6 @@
             var marker = L.marker(room.coords, { icon: customIcon }).addTo(map).bindPopup(`<b>${room.name}</b>`);
             markers[room.name.toLowerCase()] = marker;
         });
-
     </script>
 </body>
 </html>
