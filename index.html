@@ -50,7 +50,7 @@
 
         // Campus Floor Data (All Rooms)
         var campus = {
-            image: 'Untitled.png',
+            image: 'campus.png',
             bounds: [[0, 0], [302, 754]],
             markers: [
                 { name: "Food Court 1", coords: [214.83, 717.00] },
@@ -95,11 +95,13 @@
         var imageOverlay;
         var activeCircle = null;
         var activeMarker = null;
+        var activePopup = null;
 
         function loadFloor() {
             if (imageOverlay) map.removeLayer(imageOverlay);
             if (activeCircle) map.removeLayer(activeCircle);
             if (activeMarker) map.removeLayer(activeMarker);
+            if (activePopup) map.closePopup(activePopup);
 
             imageOverlay = L.imageOverlay(campus.image, campus.bounds).addTo(map);
             map.fitBounds(campus.bounds);
@@ -108,9 +110,23 @@
                 var circle = L.circleMarker(room.coords, {
                     radius: 12, // Larger Clickable Area
                     color: "transparent",
-                    fillColor: "dark grey",
+                    fillColor: "transparent",
                     fillOpacity: 0.5
                 }).addTo(map);
+
+                // Show label on hover
+                circle.on('mouseover', function () {
+                    activePopup = L.popup({ closeButton: false, autoClose: false })
+                        .setLatLng(room.coords)
+                        .setContent(`<b>${room.name}</b>`)
+                        .openOn(map);
+                });
+
+                // Hide label when mouse leaves
+                circle.on('mouseout', function () {
+                    map.closePopup(activePopup);
+                    activePopup = null;
+                });
 
                 circle.on('click', function () {
                     // Remove Previous Highlight and Pin
@@ -120,7 +136,7 @@
                     }
 
                     // Highlight the Clicked Room
-                    circle.setStyle({ color: "grey", fillColor: "white", fillOpacity: 0.8 });
+                    circle.setStyle({ color: "blue", fillColor: "yellow", fillOpacity: 0.8 });
                     activeCircle = circle;
 
                     // Add Pin Image
@@ -131,12 +147,6 @@
                             iconAnchor: [15, 40] // Bottom center
                         })
                     }).addTo(map);
-
-                    // Show Room Name
-                    L.popup()
-                        .setLatLng(room.coords)
-                        .setContent(`<b>${room.name}</b>`)
-                        .openOn(map);
                 });
             });
         }
