@@ -3,79 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Campus Map</title>
+    <title>Interactive College Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: Arial, sans-serif; }
         #map { width: 100vw; height: 100vh; }
 
-        /* UI Buttons */
-        .ui-container {
+        /* Sidebar Navigation */
+        .sidebar {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            left: 0;
+            top: 0;
+            width: 220px;
+            height: 100vh;
+            background: #222;
+            padding: 15px;
+            color: white;
             display: flex;
             flex-direction: column;
-            z-index: 1001;
+            transition: 0.3s;
         }
 
-        .button {
-            margin: 5px 0;
-            padding: 10px;
-            width: 80px;
-            text-align: center;
-            background: green;
-            color: white;
+        .sidebar h2 { text-align: center; font-size: 18px; }
+        .sidebar button {
+            background: #ff6b00;
             border: none;
+            padding: 10px;
+            margin: 5px 0;
+            color: white;
             cursor: pointer;
+            width: 100%;
             border-radius: 5px;
+            text-align: center;
         }
+        .sidebar button:hover { background: #ff8800; }
 
         /* Search Bar */
         .search-container {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1002;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 5px;
-            border-radius: 5px;
+            margin-top: 10px;
             display: flex;
-            align-items: center;
         }
 
         #search-input {
-            width: 200px;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            width: 70%;
+            padding: 8px;
+            border: none;
+            border-radius: 5px 0 0 5px;
+            outline: none;
         }
 
         #search-button {
-            margin-left: 5px;
-            padding: 5px 10px;
-            border: none;
-            background: green;
+            width: 30%;
+            background: #ff6b00;
             color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
             cursor: pointer;
-            border-radius: 5px;
         }
+
+        #search-button:hover { background: #ff8800; }
     </style>
 </head>
 <body>
 
-    <!-- Search Bar -->
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search rooms..." />
-        <button id="search-button">Search</button>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Campus Map</h2>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Search room...">
+            <button id="search-button">🔍</button>
+        </div>
+        <button onclick="toggleRooms()">Toggle Rooms</button>
     </div>
 
-    <!-- Right Side UI Buttons -->
-    <div class="ui-container">
-        <button class="button" onclick="toggleRooms()">Rooms</button>
-    </div>
-
+    <!-- Map Container -->
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -129,7 +130,7 @@
         map.fitBounds(campus.bounds);
 
         var roomMarkers = [];
-        var icon = L.icon({ iconUrl: 'ok.png', iconSize: [20, 20] });
+        var icon = L.icon({ iconUrl: 'ok.png', iconSize: [25, 25] });
 
         function toggleRooms() {
             if (roomMarkers.length) {
