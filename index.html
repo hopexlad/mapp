@@ -9,9 +9,6 @@
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
         #map { width: 100vw; height: 100vh; }
 
-        /* Hide Default Zoom Controls */
-        .leaflet-control-zoom { display: none !important; }
-
         /* Floor Buttons */
         .floor-buttons {
             position: absolute;
@@ -33,13 +30,23 @@
             cursor: pointer;
             border-radius: 5px;
         }
+
+        /* Custom Dot Style */
+        .dot {
+            width: 10px;
+            height: 10px;
+            background-color: blue;
+            border-radius: 50%;
+            position: absolute;
+            transform: translate(-50%, -50%);
+        }
     </style>
 </head>
 <body>
 
     <!-- Right Side Floor Buttons -->
     <div class="floor-buttons">
-        <button class="floor-button" onclick="loadFloor()">Campus</button>
+        <button class="floor-button" onclick="loadCampus()">Campus</button>
     </div>
 
     <div id="map"></div>
@@ -48,7 +55,7 @@
     <script>
         var map = L.map('map', { minZoom: -2, maxZoom: 4, crs: L.CRS.Simple });
 
-        // Campus Floor Data (All Rooms)
+        // Campus Floor Data (All Updated Rooms)
         var campus = {
             image: 'campus.png',
             bounds: [[0, 0], [302, 754]],
@@ -94,74 +101,82 @@
 
         var imageOverlay;
         var activeShape = null;
-        var activeMarker = null;
-        var activePopup = null;
+        var activeLabel = null;
 
-        function loadFloor() {
+        function loadCampus() {
             if (imageOverlay) map.removeLayer(imageOverlay);
             if (activeShape) map.removeLayer(activeShape);
-            if (activeMarker) map.removeLayer(activeMarker);
-            if (activePopup) map.closePopup(activePopup);
+            if (activeLabel) map.removeLayer(activeLabel);
 
             imageOverlay = L.imageOverlay(campus.image, campus.bounds).addTo(map);
             map.fitBounds(campus.bounds);
 
             campus.markers.forEach(room => {
-                var square = L.rectangle([
-                    [room.coords[0] - 5, room.coords[1] - 5], 
-                    [room.coords[0] + 5, room.coords[1] + 5]
-                ], {
-                    color: "transparent",
-                    fillColor: "transparent",
+                // Default dot (acts as a clickable marker)
+                var dot = L.circleMarker(room.coords, {
+                    radius: 5,
+                    color: "blue",
+                    fillColor: "blue",
                     fillOpacity: 0.5
                 }).addTo(map);
 
-                // Change to square when hovering
-                square.on('mouseover', function () {
-                    square.setStyle({ color: "blue", fillColor: "yellow", fillOpacity: 0.3 });
+                // Label initially hidden
+                var label = L.divIcon({
+                    className: 'room-label',
+                    html: `<b style="color: black; background: white; padding: 2px 5px; border-radius: 3px;">${room.name}</b>`,
+                    iconSize: [100, 20]
                 });
 
-                // Revert to transparent when leaving
-                square.on('mouseout', function () {
-                    square.setStyle({ color: "transparent", fillColor: "transparent" });
+                var labelMarker = L.marker(room.coords, { icon: label, opacity: 0 }).addTo(map); // Initially hidden
+
+                // Hover: Darkens the dot and shows label
+                dot.on('mouseover', function () {
+                    dot.setStyle({ fillOpacity: 1 });
+                    labelMarker.setOpacity(1);
                 });
 
-                square.on('click', function () {
-                    // Remove previous highlight and pin
+                // Leave: Revert to normal opacity and hide label
+                dot.on('mouseout', function () {
+                    dot.setStyle({ fillOpacity: 0.5 });
+                    if (activeLabel !== labelMarker) {
+                        labelMarker.setOpacity(0);
+                    }
+                });
+
+                dot.on('click', function () {
+                    // Remove previous selection
                     if (activeShape) {
-                        activeShape.setStyle({ color: "transparent", fillColor: "transparent" });
-                        map.removeLayer(activeMarker);
+                        activeShape.setStyle({ radius: 5, fillOpacity: 0.5 });
+                    }
+                    if (activeLabel) {
+                        activeLabel.setOpacity(0);
                     }
 
-                    // Change to 10-radius circle
-                    activeShape = L.circle(room.coords, {
-                        radius: 10,
-                        color: "blue",
-                        fillColor: "yellow",
-                        fillOpacity: 0.8
-                    }).addTo(map);
+                    // Shrink dot size when clicked
+                    dot.setStyle({ radius: 3, fillOpacity: 1 });
 
-                    // Show label
-                    activePopup = L.popup({ closeButton: false, autoClose: false })
-                        .setLatLng(room.coords)
-                        .setContent(`<b>${room.name}</b>`)
-                        .openOn(map);
+                    // Keep label visible
+                    labelMarker.setOpacity(1);
 
-                    // Add pin
-                    activeMarker = L.marker(room.coords, {
-                        icon: L.icon({
-                            iconUrl: 'pin.png',
-                            iconSize: [30, 40],
-                            iconAnchor: [15, 40]
-                        })
-                    }).addTo(map);
+                    // Set active
+                    activeShape = dot;
+                    activeLabel = labelMarker;
+                });
+
+                // Zoom-dependent label visibility
+                map.on('zoomend', function () {
+                    var zoom = map.getZoom();
+                    if (zoom < 0) {
+                        labelMarker.setOpacity(0);
+                    } else {
+                        labelMarker.setOpacity(1);
+                    }
                 });
             });
         }
 
         // Load Campus by Default
-        loadFloor();
+        loadCampus();
     </script>
 </body>
 </html>
-
