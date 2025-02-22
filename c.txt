@@ -1,0 +1,105 @@
+/* Reset and Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+/* Body with Background Image */
+body {
+    background: url('https://i.pinimg.com/originals/ef/70/85/ef7085be91d78613f0938fee57e45f4a.jpg') no-repeat center center/cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+}
+
+/* Center the screen properly */
+.screen {
+    width: 100%;
+    max-width: 500px;
+    padding: 20px;
+    background: rgb(255, 255, 255);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+}
+
+/* Hidden Screen */
+.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Ensure the logo stays centered */
+.logo-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+/* Logo Styling */
+.logo {
+    width: 300px;
+    height: 300px;
+    display: block;
+    margin: auto;
+    transition: transform 0.3s ease-in-out;
+}
+
+.logo:hover {
+    transform: scale(1.1);
+}
+
+/* Welcome Text Styling */
+.welcome-text {
+    margin-top: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    transition: color 0.3s ease-in-out;
+}
+
+.welcome-text:hover {
+    color: darkblue;
+}
+
+/* Button Styling */
+.button1 {
+    margin: 10px;
+    padding: 12px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: background 0.3s;
+    width: 80%; /* Keeps button width controlled */
+}
+
+.button1-green { background: rgb(28, 92, 28); color: white; }
+.button1-green:hover { background: rgb(101, 187, 101); }
+
+.button1-blue { background: blue; color: white; }
+.button1-blue:hover { background: rgb(52, 52, 143); }
+
+.button1-purple { background: rgb(175, 27, 163); color: white; }
+.button1-purple:hover { background: rgb(201, 79, 160); }
+
+.button1-pink { background: rgb(151, 81, 92); color: white; }
+.button1-pink:hover { background: plum; }
+
+/* Fix button alignment issue */
+#navigationScreen {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers content */
+}
+
