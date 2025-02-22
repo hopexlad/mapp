@@ -144,7 +144,7 @@
 
             markers = floor.markers.map(room => {
                 return L.marker(room.coords, { 
-                    icon: L.icon({ iconUrl: 'mappin.png', iconSize: [25, 41], iconAnchor: [12, 41] }) 
+                    icon: L.icon({ iconUrl: 'mappin.png', iconSize: [35, 41], iconAnchor: [15, 41] }) 
                 }).addTo(map).bindPopup(`<b>${room.name}</b>`);
             });
         }
