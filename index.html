@@ -131,9 +131,10 @@
 <!-- Welcome Screen -->
 <div id="welcomeScreen" class="screen">
     <img src="log.png" class="logo" alt="KPR Logo">
+    <p>Press "Enter" to continue</p>
 </div>
 
-<!-- Map Screen -->
+<!-- Map Screen (Initially Hidden) -->
 <div id="map-container" style="display: none;">
     <div class="search-container">
         <input type="text" id="search-input" placeholder="Search rooms..." />
@@ -151,20 +152,18 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
     document.addEventListener("keydown", function(event) {
-        if (event.key === "Enter") {  // Checks if Enter key is pressed
-            document.getElementById('welcomeScreen').classList.add('hidden');
-            setTimeout(() => {
-                document.getElementById('welcomeScreen').style.display = 'none';
-                document.getElementById('map-container').style.display = 'block';
-                initializeMap();
-            }, 1000); 
+        if (event.key === "Enter") {  // Wait for Enter key press
+            document.getElementById('welcomeScreen').style.display = 'none'; // Hide welcome screen
+            document.getElementById('map-container').style.display = 'block'; // Show map screen
+            initializeMap(); // Initialize map function
         }
     });
 
     function initializeMap() {
-        console.log("Map initialized"); // Add your map initialization logic here
+        console.log("Map initialized"); // Replace with actual map logic
     }
 </script>
+
 
 <!--     <!-- Welcome Screen -->
     <div id="welcomeScreen" class="screen">
