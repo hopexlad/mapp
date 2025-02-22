@@ -123,7 +123,6 @@
                     { name: "Placement Waiting Room", coords: [225.98, 24.00] },
                     { name: "Master Board Room", coords: [109.41, 16.00] },
                     { name: "Oak Leaf", coords: [74.89, 18.00] },
-                    { name: "Guest Waiting Hall", coords: [35.87, 63.00] },
                     { name: "Principal Office", coords: [36.87, 11.50] },
                     { name: "Secretary Office", coords: [34.37, 32.00] }
                 ]
@@ -144,7 +143,7 @@
 
             markers = floor.markers.map(room => {
                 return L.marker(room.coords, { 
-                    icon: L.icon({ iconUrl: 'mappin.png', iconSize: [35, 41], iconAnchor: [15, 41] }) 
+                    icon: L.icon({ iconUrl: 'mappin.png', iconSize: [35, 38], iconAnchor: [15, 38] }) 
                 }).addTo(map).bindPopup(`<b>${room.name}</b>`);
             });
         }
