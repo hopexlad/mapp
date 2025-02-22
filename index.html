@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -252,6 +252,234 @@
             document.getElementById('map-container').style.display = 'none';
             document.getElementById('welcomeScreen').style.display = 'flex';
             document.getElementById('welcomeScreen').classList.remove('hidden');
+            setTimeout(() => location.reload(), 500);
+        }
+    </script>
+
+</body>
+</html>
+ -->
+
+
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPR Interactive Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    
+    <style>
+        /* Reset and Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        /* Fullscreen Container */
+        body, html {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        /* Welcome Screen */
+        .screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: url('https://kprcas.ac.in/file/wp-content/uploads/2024/12/kprcas-1052x468.jpg') no-repeat center center/cover;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .hidden { opacity: 0; pointer-events: none; }
+
+        /* Logo */
+        .logo {
+            width: 300px;
+            height: 300px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .logo:hover { transform: scale(1.1); }
+
+        /* Buttons */
+        .button {
+            margin: 10px;
+            padding: 12px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background 0.3s;
+            width: 200px;
+        }
+
+        .button-green { background: green; color: white; }
+
+        /* Map Container */
+        #map-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        #map { width: 100%; height: 100%; }
+
+        /* UI Elements */
+        .ui-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            z-index: 1001;
+        }
+
+        .ui-container button {
+            margin: 5px 0;
+            padding: 10px;
+            width: 120px;
+            background: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .search-container {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1002;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        #search-input {
+            width: 200px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #search-button {
+            margin-left: 5px;
+            padding: 5px 10px;
+            border: none;
+            background: green;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Welcome Screen -->
+    <div id="welcomeScreen" class="screen">
+        <img src="log.png" class="logo" alt="KPR Logo" >
+    </div>
+
+    <!-- Map Screen -->
+    <div id="map-container">
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Search rooms..." />
+            <button id="search-button">Search</button>
+        </div>
+
+        <div class="ui-container">
+            <button onclick="toggleRooms()">Toggle Rooms</button>
+            <button onclick="goToFrontPage()">Front Page</button>
+        </div>
+
+        <div id="map"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // Auto transition from Welcome Screen to Map
+        setTimeout(() => {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            setTimeout(() => {
+                document.getElementById('welcomeScreen').style.display = 'none';
+                document.getElementById('map-container').style.display = 'block';
+                initializeMap();
+            }, 1000);
+        }, 3000);
+
+        let map, roomMarkers = [];
+        let icon = L.icon({ iconUrl: 'ok.png', iconSize: [20, 20] });
+
+        function initializeMap() {
+            map = L.map('map', { minZoom: -2, maxZoom: 4, crs: L.CRS.Simple });
+
+            let campus = {
+                image: 'campus.png',
+                bounds: [[0, 0], [302, 754]],
+                markers: [
+                    { name: "Food Court", coords: [214.83, 717.00] },
+                    { name: "Library", coords: [47.74, 512.00] },
+                    { name: "Auditorium", coords: [250.85, 601.00] },
+                    { name: "Office", coords: [196.46, 171.00] }
+                ]
+            };
+
+            L.imageOverlay(campus.image, campus.bounds).addTo(map);
+            map.fitBounds(campus.bounds);
+
+            // Function to toggle room markers
+            window.toggleRooms = function() {
+                if (roomMarkers.length) {
+                    roomMarkers.forEach(marker => map.removeLayer(marker));
+                    roomMarkers = [];
+                } else {
+                    campus.markers.forEach(room => {
+                        let marker = L.marker(room.coords, { icon }).addTo(map)
+                            .bindTooltip(room.name, { permanent: false, direction: 'top' });
+                        roomMarkers.push(marker);
+                    });
+                }
+            };
+
+            // Function to search a room
+            window.searchRoom = function() {
+                let searchValue = document.getElementById("search-input").value.toLowerCase();
+                let foundRoom = campus.markers.find(room => room.name.toLowerCase().includes(searchValue));
+
+                if (foundRoom) {
+                    map.setView(foundRoom.coords, 2);
+                    let tempMarker = L.marker(foundRoom.coords, { icon }).addTo(map)
+                        .bindTooltip(foundRoom.name, { permanent: true, direction: 'top' });
+
+                    setTimeout(() => map.removeLayer(tempMarker), 3000);
+                } else {
+                    alert("Room not found!");
+                }
+            };
+
+            document.getElementById("search-button").addEventListener("click", searchRoom);
+        }
+
+        function goToFrontPage() {
+            document.getElementById('map-container').style.display = 'none';
+            document.getElementById('welcomeScreen').style.display = 'flex';
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+
+            // Reload only after 500ms
             setTimeout(() => location.reload(), 500);
         }
     </script>
