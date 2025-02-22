@@ -33,12 +33,14 @@
 
         /* Transparent Label Style */
         .room-label {
-            background: rgba(255, 255, 255, 0.2); /* Transparent */
+            background: rgba(255, 255, 255, 0.7); /* Slightly visible */
             padding: 2px 5px;
             border-radius: 3px;
             font-weight: bold;
             color: black;
-            display: inline-block;
+            font-size: 12px;
+            white-space: nowrap;
+            display: none; /* Hidden by default */
         }
     </style>
 </head>
@@ -55,7 +57,7 @@
     <script>
         var map = L.map('map', { minZoom: -2, maxZoom: 4, crs: L.CRS.Simple });
 
-        // Campus Floor Data (All Updated Rooms)
+        // Campus Floor Data
         var campus = {
             image: 'campus.png',
             bounds: [[0, 0], [302, 754]],
@@ -100,20 +102,17 @@
         };
 
         var imageOverlay;
-        var activeShape = null;
-        var activeLabel = null;
+        var activeDot = null;
         var dots = [];
 
         function loadCampus() {
             if (imageOverlay) map.removeLayer(imageOverlay);
-            if (activeShape) map.removeLayer(activeShape);
-            if (activeLabel) map.removeLayer(activeLabel);
+            if (activeDot) activeDot.setStyle({ radius: 5, fillOpacity: 0.5 });
 
             imageOverlay = L.imageOverlay(campus.image, campus.bounds).addTo(map);
             map.fitBounds(campus.bounds);
 
             campus.markers.forEach(room => {
-                // Default dot (acts as a clickable marker)
                 var dot = L.circleMarker(room.coords, {
                     radius: 5,
                     color: "blue",
@@ -121,44 +120,41 @@
                     fillOpacity: 0.5
                 }).addTo(map);
 
-                dots.push(dot); // Store dot for later reference
+                dots.push(dot);
 
-                // Label initially hidden
                 var label = L.divIcon({
                     className: 'room-label',
                     html: `<b>${room.name}</b>`,
                     iconSize: [100, 20]
                 });
 
-                var labelMarker = L.marker(room.coords, { icon: label, opacity: 0 }).addTo(map);
+                var labelMarker = L.marker(room.coords, { icon: label }).addTo(map);
+                labelMarker.getElement().style.display = 'none'; // Hide label initially
 
-                // Hover: Darkens dot and shows label
                 dot.on('mouseover', function () {
                     dot.setStyle({ fillOpacity: 1 });
-                    labelMarker.setOpacity(1);
+                    labelMarker.getElement().style.display = 'block';
                 });
 
-                // Leave: Revert to normal opacity and hide label
                 dot.on('mouseout', function () {
                     dot.setStyle({ fillOpacity: 0.5 });
-                    if (activeLabel !== labelMarker) {
-                        labelMarker.setOpacity(0);
+                    if (activeDot !== dot) {
+                        labelMarker.getElement().style.display = 'none';
                     }
                 });
 
                 dot.on('click', function () {
-                    if (activeShape) activeShape.setStyle({ radius: 5, fillOpacity: 0.5 });
-                    if (activeLabel) activeLabel.setOpacity(0);
+                    if (activeDot) {
+                        activeDot.setStyle({ radius: 5, fillOpacity: 0.5 });
+                    }
 
                     dot.setStyle({ radius: 3, fillOpacity: 1 });
-                    labelMarker.setOpacity(1);
+                    activeDot = dot;
 
-                    activeShape = dot;
-                    activeLabel = labelMarker;
+                    labelMarker.getElement().style.display = 'block';
                 });
             });
 
-            // Randomly hide dots when zooming out
             map.on('zoomend', function () {
                 var zoom = map.getZoom();
                 dots.forEach(dot => {
@@ -171,7 +167,6 @@
             });
         }
 
-        // Load Campus by Default
         loadCampus();
     </script>
 </body>
