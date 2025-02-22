@@ -1,4 +1,4 @@
-<!-- <!DOCTYPE html>
+<!-- <!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -488,6 +488,284 @@
             document.getElementById('welcomeScreen').classList.remove('hidden');
 
             // Reload only after 500ms
+            setTimeout(() => location.reload(), 500);
+        }
+    </script>
+
+</body>
+</html>
+ -->
+
+
+
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPR Interactive Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: url('https://kprcas.ac.in/file/wp-content/uploads/2024/12/kprcas-1052x468.jpg') no-repeat center center/cover;
+            transition: opacity 0.9s;
+        }
+
+        .hidden { opacity: 0; pointer-events: none; }
+
+        .logo {
+            width: 300px;
+            height: 300px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .logo:hover { transform: scale(1.1); }
+
+        .button {
+            margin: 10px;
+            padding: 12px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background 0.3s;
+            width: 200px;
+        }
+
+        .button-green { background: green; color: white; }
+
+        #map-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        #map { width: 100%; height: 100%; }
+
+        .ui-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            z-index: 1001;
+        }
+
+        .ui-container button {
+            margin: 5px 0;
+            padding: 10px;
+            width: 140px;
+            background: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .search-container {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1002;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        #search-input {
+            width: 200px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #search-button {
+            margin-left: 5px;
+            padding: 5px 10px;
+            border: none;
+            background: green;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="welcomeScreen" class="screen">
+        <img src="LOGO_KPR.jpg" class="logo" alt="KPR Logo">
+        <h1>Welcome to KPR</h1>
+    </div>
+
+    <div id="map-container">
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Search rooms..." />
+            <button id="search-button">Search</button>
+        </div>
+
+        <div class="ui-container">
+            <button onclick="toggleRooms()">Toggle Rooms</button>
+            <button onclick="showMyLocation()">Show My Location</button>
+            <button onclick="goToFrontPage()">Front Page</button>
+        </div>
+
+        <div id="map"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        let userMarker = null;
+       
+        setTimeout(() => {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            setTimeout(() => {
+                document.getElementById('welcomeScreen').style.display = 'none';
+                document.getElementById('map-container').style.display = 'block';
+                initializeMap();
+            }, 1000);
+        }, 3000);
+
+        function initializeMap() {
+            var map = L.map('map', { minZoom: -2, maxZoom: 4, crs: L.CRS.Simple });
+
+            var campus = {
+                image: 'campus.png',
+                bounds: [[0, 0], [302, 754]],
+                markers: [
+                    { name: "Food Court 1", lat: 214.83, log: 717.00 },
+                { name: "Food Court 2", lat: 66.75, log: 717.00 },
+                { name: "Auditorium 1", lat: 250.85, log: 601.00 },
+                { name: "Auditorium 2", lat: 54.75, log: 601.00 },
+                { name: "Seminar Hall", lat: 154.80, log: 610.00 },
+                { name: "Hostelers Mess", lat: 111.78, log: 603.00 },
+                { name: "Mess", lat: 190.82, log: 603.00 },
+                { name: "Lab 4", lat: 201.83, log: 514.00 },
+                { name: "Lab 3", lat: 102.77, log: 512.00 },
+                { name: "Library", lat: 47.74, log: 512.00 },
+                { name: "NCC", lat: 33.74, log: 471.00 },
+                { name: "OAT", lat: 150.80, log: 429.00 },
+                { name: "Lab 5", lat: 264.86, log: 482.00 },
+                { name: "PEA", lat: 263.86, log: 385.00 },
+                { name: "Stock Room", lat: 264.84, log: 353.00 },
+                { name: "Transport Office", lat: 262.86, log: 329.00 },
+                { name: "Sick Room", lat: 206.83, log: 351.00 },
+                { name: "CG114", lat: 181.82, log: 355.00 },
+                { name: "CG113", lat: 119.78, log: 354.00 },
+                { name: "CG112", lat: 93.77, log: 354.00 },
+                { name: "Lab 1", lat: 38.74, log: 377.00 },
+                { name: "Zig-Zag", lat: -271.87, log: 263.00 },
+                { name: "Boy Restroom", lat: 33.87, log: 306.50 },
+                { name: "Girls Restroom", lat: 35.87, log: 233.00 },
+                { name: "Admission Office", lat: 263.99, log: 193.00 },
+                { name: "Falcon Hall", lat: 264.49, log: 152.50 },
+                { name: "Office", lat: 196.46, log: 171.00 },
+                { name: "Exam Cell", lat: 107.91, log: 172.50 },
+                { name: "Guest Waiting", lat: 33.87, log: 152.50 },
+                { name: "Oasis", lat: 33.87, log: 65.00 },
+                { name: "Placement Waiting Room", lat: 225.98, log: 24.00 },
+                { name: "Master Board Room", lat: 109.41, log: 16.00 },
+                { name: "Oak Leaf", lat: 74.89, log: 18.00 },
+               
+                { name: "Principal Office", lat: 36.87, log: 11.50 },
+                { name: "Secretary Office", lat: 34.37, log: 32.00 }
+                ]
+            };
+
+            var imageOverlay = L.imageOverlay(campus.image, campus.bounds).addTo(map);
+            map.fitBounds(campus.bounds);
+
+            var roomMarkers = [];
+            var icon = L.icon({ iconUrl: 'ok.png', iconSize: [20, 20] });
+
+            function toggleRooms() {
+                if (roomMarkers.length) {
+                    roomMarkers.forEach(marker => map.removeLayer(marker));
+                    roomMarkers = [];
+                } else {
+                    campus.markers.forEach(room => {
+                        var marker = L.marker(room.coords, { icon }).addTo(map)
+                            .bindTooltip(room.name, { permanent: false, direction: 'top' });
+                        roomMarkers.push(marker);
+                    });
+                }
+            }
+
+            function searchRoom() {
+                var searchValue = document.getElementById("search-input").value.toLowerCase();
+                var foundRoom = campus.markers.find(room => room.name.toLowerCase().includes(searchValue));
+
+                if (foundRoom) {
+                    map.setView(foundRoom.coords, 2);
+                    var marker = L.marker(foundRoom.coords, { icon }).addTo(map)
+                        .bindTooltip(foundRoom.name, { permanent: true, direction: 'top' });
+                   
+                    setTimeout(() => map.removeLayer(marker), 3000);
+                } else {
+                    alert("Room not found!");
+                }
+            }
+
+            function showMyLocation() {
+                if (!navigator.geolocation) {
+                    alert("Geolocation is not supported by your browser.");
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(position => {
+                    var lat = position.coords.latitude;
+                    var lon = position.coords.longitude;
+
+                    if (userMarker) {
+                        map.removeLayer(userMarker);
+                    }
+
+                    var blueIcon = L.icon({ iconUrl: 'https://leafletjs.com/examples/custom-icons/leaf-blue.png', iconSize: [25, 41] });
+
+                    userMarker = L.marker([lat, lon], { icon: blueIcon }).addTo(map)
+                        .bindPopup("You are here").openPopup();
+
+                    map.setView([lat, lon], 2);
+                }, () => {
+                    alert("Unable to retrieve your location.");
+                });
+            }
+
+            document.getElementById("search-button").addEventListener("click", searchRoom);
+            window.toggleRooms = toggleRooms;
+            window.showMyLocation = showMyLocation;
+        }
+
+        function goToFrontPage() {
+            document.getElementById('map-container').style.display = 'none';
+            document.getElementById('welcomeScreen').style.display = 'flex';
+            document.getElementById('welcomeScreen').classList.remove('hidden');
             setTimeout(() => location.reload(), 500);
         }
     </script>
