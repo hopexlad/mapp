@@ -123,8 +123,17 @@
         ];
 
         var markers = {};
+        var customIcon = L.icon({
+            iconUrl: 'https://leafletjs.com/examples/custom-icons/leaf-red.png',  
+            iconSize: [20, 30],  
+            iconAnchor: [10, 30],  
+            popupAnchor: [0, -30]  
+        });
+
         rooms.forEach(room => {
-            var marker = L.marker(room.coords, { icon: L.icon({ iconUrl: 'marker-icon.png', iconSize: [12, 20] }) }).addTo(map).bindPopup(`<b>${room.name}</b>`);
+            var marker = L.marker(room.coords, { icon: customIcon })
+                .addTo(map)
+                .bindPopup(`<b>${room.name}</b>`);
             markers[room.name.toLowerCase()] = marker;
         });
     </script>
