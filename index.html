@@ -50,53 +50,43 @@
         });
 
         // **Icons**
-        var icons = {
-            food: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/3480/3480817.png', iconSize: [25, 25] }),
-            auditorium: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/1029/1029183.png', iconSize: [25, 25] }),
-            book: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/2232/2232688.png', iconSize: [25, 25] }),
-            restroom: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/888/888853.png', iconSize: [25, 25] }),
-            medical: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/2966/2966327.png', iconSize: [25, 25] }),
-            office: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/3186/3186923.png', iconSize: [25, 25] }),
-            transport: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/3105/3105977.png', iconSize: [25, 25] }),
-            gym: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/809/809927.png', iconSize: [25, 25] }),
-            default: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [20, 20] })
-        };
+        var defaultIcon = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [20, 20] });
 
         // **Room Markers**
         var rooms = [
-            { name: "Food Court 1", coords: [214.83, 717.00], icon: icons.food },
-            { name: "Food Court 2", coords: [66.75, 717.00], icon: icons.food },
-            { name: "Auditorium 1", coords: [250.85, 601.00], icon: icons.auditorium },
-            { name: "Auditorium 2", coords: [54.75, 601.00], icon: icons.auditorium },
-            { name: "Seminar Hall", coords: [154.80, 610.00], icon: icons.auditorium },
-            { name: "Hostellers Mess", coords: [111.78, 603.00], icon: icons.food },
-            { name: "Mess", coords: [190.82, 603.00], icon: icons.food },
-            { name: "Lab 4", coords: [201.83, 514.00], icon: icons.book },
-            { name: "Lab 3", coords: [102.77, 512.00], icon: icons.book },
-            { name: "Library", coords: [47.74, 512.00], icon: icons.book },
-            { name: "NCC", coords: [33.74, 471.00], icon: icons.default },
-            { name: "OAT", coords: [150.80, 429.00], icon: icons.auditorium },
-            { name: "Lab 5", coords: [264.86, 482.00], icon: icons.book },
-            { name: "PE", coords: [263.86, 385.00], icon: icons.gym },
-            { name: "Stock Room", coords: [264.84, 353.00], icon: icons.transport },
-            { name: "Transport Office", coords: [262.86, 329.00], icon: icons.transport },
-            { name: "Sick room", coords: [206.83, 351.00], icon: icons.medical },
-            { name: "CG114", coords: [181.82, 355.00], icon: icons.default },
-            { name: "CG113", coords: [119.78, 354.00], icon: icons.default },
-            { name: "CG112", coords: [93.77, 354.00], icon: icons.default },
-            { name: "Lab 1", coords: [38.74, 377.00], icon: icons.book },
-            { name: "Boys Restroom", coords: [33.87, 306.50], icon: icons.restroom },
-            { name: "Girls Restroom", coords: [35.87, 233.00], icon: icons.restroom },
-            { name: "Admission Office", coords: [263.99, 193.00], icon: icons.office },
-            { name: "Falcon", coords: [264.49, 152.50], icon: icons.default },
-            { name: "Office", coords: [196.46, 171.00], icon: icons.office },
-            { name: "Exam Cell", coords: [107.91, 172.50], icon: icons.book },
-            { name: "Guest Waiting", coords: [33.87, 152.50], icon: icons.default },
-            { name: "Oasis", coords: [33.87, 65.00], icon: icons.default }
+            { name: "Food Court 1", coords: [214.83, 717.00] },
+            { name: "Food Court 2", coords: [66.75, 717.00] },
+            { name: "Auditorium 1", coords: [250.85, 601.00] },
+            { name: "Auditorium 2", coords: [54.75, 601.00] },
+            { name: "Seminar Hall", coords: [154.80, 610.00] },
+            { name: "Hostellers Mess", coords: [111.78, 603.00] },
+            { name: "Mess", coords: [190.82, 603.00] },
+            { name: "Lab 4", coords: [201.83, 514.00] },
+            { name: "Lab 3", coords: [102.77, 512.00] },
+            { name: "Library", coords: [47.74, 512.00] },
+            { name: "NCC", coords: [33.74, 471.00] },
+            { name: "OAT", coords: [150.80, 429.00] },
+            { name: "Lab 5", coords: [264.86, 482.00] },
+            { name: "PE", coords: [263.86, 385.00] },
+            { name: "Stock Room", coords: [264.84, 353.00] },
+            { name: "Transport Office", coords: [262.86, 329.00] },
+            { name: "Sick Bay", coords: [206.83, 351.00] },
+            { name: "CG114", coords: [181.82, 355.00] },
+            { name: "CG113", coords: [119.78, 354.00] },
+            { name: "CG112", coords: [93.77, 354.00] },
+            { name: "Lab 1", coords: [38.74, 377.00] },
+            { name: "Boys Restroom", coords: [33.87, 306.50] },
+            { name: "Girls Restroom", coords: [35.87, 233.00] },
+            { name: "Admissions Office", coords: [263.99, 193.00] },
+            { name: "Falcon", coords: [264.49, 152.50] },
+            { name: "Office", coords: [196.46, 171.00] },
+            { name: "Exam Cell", coords: [107.91, 172.50] },
+            { name: "Guest Waiting", coords: [33.87, 152.50] },
+            { name: "Oasis", coords: [33.87, 65.00] }
         ];
 
         rooms.forEach(room => {
-            L.marker(room.coords, { icon: room.icon })
+            L.marker(room.coords, { icon: defaultIcon })
                 .addTo(map)
                 .bindPopup(`<b>${room.name}</b>`);
         });
@@ -105,7 +95,3 @@
 
 </body>
 </html>
-
-
-
-
