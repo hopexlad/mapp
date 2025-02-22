@@ -100,10 +100,10 @@
 
             campus.markers.forEach(room => {
                 var dot = L.circleMarker(room.coords, {
-                    radius: 5,
-                    color: "grey",
-                    fillColor: "grey",
-                    fillOpacity: 0.5
+                    radius: 3.5,
+                    color: "dark grey",
+                    fillColor: "dark grey",
+                    fillOpacity: 1.0
                 }).addTo(map);
 
                 // Bind Tooltip for Room Name
@@ -123,10 +123,10 @@
 
                 dot.on('click', function () {
                     if (activeDot) {
-                        activeDot.setStyle({ radius: 5, fillOpacity: 0.5 });
+                        activeDot.setStyle({ radius: 5, fillOpacity: 1.0 });
                     }
 
-                    dot.setStyle({ radius: 7, fillOpacity: 1 });
+                    dot.setStyle({ radius: 5, fillOpacity: 1 });
                     activeDot = dot;
                     dot.openTooltip();
                 });
