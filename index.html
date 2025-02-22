@@ -83,6 +83,12 @@
             document.getElementById('coordinates').innerHTML = `Latitude: ${lat}, Longitude: ${lng}`;
         });
 
+        var customIcon = L.icon({
+            iconUrl: 'mappin.png', 
+            iconSize: [25, 41],  
+            iconAnchor: [12, 41]  
+        });
+
         var rooms = [
             { name: "Food Court 1", coords: [214.83, 717.00] },
             { name: "Food Court 2", coords: [66.75, 717.00] },
@@ -121,12 +127,6 @@
             { name: "Principal Office", coords: [36.87, 11.50] },
             { name: "Secretary Office", coords: [34.37, 32.00] }
         ];
-
-        var customIcon = L.icon({
-            iconUrl: 'mappin.png', // Ensure this file exists in your project directory
-            iconSize: [25, 41], 
-            iconAnchor: [12, 41]
-        });
 
         var markers = {};
         rooms.forEach(room => {
