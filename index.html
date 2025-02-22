@@ -123,17 +123,8 @@
         ];
 
         var markers = {};
-        var customIcon = L.icon({
-            iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',  
-            iconSize: [30, 40],  
-            iconAnchor: [15, 40],  
-            popupAnchor: [0, -40]  
-        });
-
         rooms.forEach(room => {
-            var marker = L.marker(room.coords, { icon: customIcon })
-                .addTo(map)
-                .bindPopup(`<b>${room.name}</b>`);
+            var marker = L.marker(room.coords, { icon: L.icon({ iconUrl: 'marker-icon.png', iconSize: [12, 20] }) }).addTo(map).bindPopup(`<b>${room.name}</b>`);
             markers[room.name.toLowerCase()] = marker;
         });
     </script>
