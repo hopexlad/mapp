@@ -79,6 +79,24 @@
             height: 300px;
             overflow-y: auto;
         }
+        .chat-message {
+            display: flex;
+            margin-bottom: 5px;
+        }
+        .user-message {
+            background: #d1e7dd;
+            padding: 5px;
+            border-radius: 5px;
+            align-self: flex-start;
+            margin-right: auto;
+        }
+        .bot-message {
+            background: #f8d7da;
+            padding: 5px;
+            border-radius: 5px;
+            align-self: flex-end;
+            margin-left: auto;
+        }
         .chat-input {
             display: flex;
             border-top: 1px solid #ddd;
@@ -118,6 +136,7 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         var map = L.map('map', { minZoom: -2, maxZoom: 4, crs: L.CRS.Simple });
+
         var campus = {
             image: 'campus.png',
             bounds: [[0, 0], [302, 754]],
@@ -161,61 +180,45 @@
             
             ]
         };
+
         var imageOverlay = L.imageOverlay(campus.image, campus.bounds).addTo(map);
         map.fitBounds(campus.bounds);
-        var icon = L.icon({ iconUrl: 'ok.png', iconSize: [20, 20] });
-        var roomMarkers = [];
-        function toggleRooms() {
-            if (roomMarkers.length) {
-                roomMarkers.forEach(marker => map.removeLayer(marker));
-                roomMarkers = [];
-            } else {
-                campus.markers.forEach(room => {
-                    var marker = L.marker(room.coords, { icon }).addTo(map)
-                        .bindTooltip(room.name, { permanent: false, direction: 'top' });
-                    roomMarkers.push(marker);
-                });
+
+        var markers = {};
+        campus.markers.forEach(place => {
+            markers[place.name.toLowerCase()] = L.marker(place.coords, { title: place.name }).addTo(map);
+        });
+
+        function highlightRoom(roomName) {
+            var lowerCaseRoom = roomName.toLowerCase();
+            if (markers[lowerCaseRoom]) {
+                map.setView(markers[lowerCaseRoom].getLatLng(), 3);
+                markers[lowerCaseRoom].openPopup();
             }
         }
-        function highlightRoom(room) {
-            map.setView(room.coords, 3);
-            var marker = L.marker(room.coords, { icon }).addTo(map)
-                .bindTooltip(room.name, { permanent: true, direction: 'top' });
-            setTimeout(() => map.removeLayer(marker), 3000);
-        }
-        function searchRoom() {
-            var searchValue = document.getElementById("search-input").value.toLowerCase();
-            var foundRoom = campus.markers.find(room => room.name.toLowerCase().includes(searchValue));
-            if (foundRoom) {
-                highlightRoom(foundRoom);
-            } else {
-                alert("Room not found!");
-            }
-        }
-        document.getElementById("search-button").addEventListener("click", searchRoom);
-        function toggleChat() {
-            var chatBox = document.getElementById("chat-container");
-            chatBox.style.display = chatBox.style.display === "none" ? "block" : "none";
-        }
+
         function sendMessage() {
-            var input = document.getElementById("chat-input").value.trim();
-            if (input === "") return;
-            addMessage("You: " + input, "user");
-            var response = "I'm not sure, but I can help you with locations!";
-            setTimeout(() => addMessage("Bot: " + response, "bot"), 1000);
-            document.getElementById("chat-input").value = "";
-        }
-        function addMessage(msg) {
+            var input = document.getElementById("chat-input").value;
             var chatBox = document.getElementById("chat-messages");
-            var msgDiv = document.createElement("div");
-            msgDiv.innerText = msg;
-            chatBox.appendChild(msgDiv);
+            var userMessage = document.createElement("div");
+            userMessage.className = "chat-message user-message";
+            userMessage.textContent = "You: " + input;
+            chatBox.appendChild(userMessage);
+
+            var botMessage = document.createElement("div");
+            botMessage.className = "chat-message bot-message";
+            if (markers[input.toLowerCase()]) {
+                highlightRoom(input);
+                botMessage.textContent = "Bot: Highlighting " + input;
+            } else if (["hi", "hello", "hey", "thanks", "thank you"].includes(input.toLowerCase())) {
+                botMessage.textContent = "Bot: You're welcome! How can I assist you?";
+            } else {
+                botMessage.textContent = "Bot: Room not found";
+            }
+            chatBox.appendChild(botMessage);
+            document.getElementById("chat-input").value = "";
             chatBox.scrollTop = chatBox.scrollHeight;
-        }
-        function handleKeyPress(event) {
-            if (event.key === "Enter") sendMessage();
         }
     </script>
 </body>
 </html>
-
