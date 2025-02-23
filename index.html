@@ -6,29 +6,44 @@
     <title>Interactive Campus Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
-        #map { width: 100vw; height: 100vh; }
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #map {
+            width: 100vw;
+            height: 100vh;
+        }
 
-        /* UI Buttons */
+        /* UI Elements */
         .ui-container {
             position: absolute;
-            bottom: 120px;
+            bottom: 20px;
             right: 20px;
             display: flex;
             flex-direction: column;
+            gap: 10px;
             z-index: 1001;
         }
 
         .button {
-            margin: 5px 0;
-            padding: 10px;
-            width: 120px;
+            padding: 12px;
+            width: 140px;
             text-align: center;
-            background: green;
+            background: #2c7a2c;
             color: white;
             border: none;
             cursor: pointer;
             border-radius: 5px;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        .button:hover {
+            background: #1e5b1e;
         }
 
         /* Search Bar */
@@ -39,27 +54,35 @@
             transform: translateX(-50%);
             z-index: 1002;
             background: rgba(255, 255, 255, 0.9);
-            padding: 5px;
-            border-radius: 5px;
+            padding: 8px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
         #search-input {
-            width: 200px;
-            padding: 5px;
+            width: 220px;
+            padding: 8px;
             border: 1px solid #ccc;
             border-radius: 5px;
+            font-size: 14px;
         }
 
         #search-button {
             margin-left: 5px;
-            padding: 5px 10px;
+            padding: 8px 12px;
             border: none;
-            background: green;
+            background: #2c7a2c;
             color: white;
             cursor: pointer;
             border-radius: 5px;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        #search-button:hover {
+            background: #1e5b1e;
         }
     </style>
 </head>
@@ -83,12 +106,13 @@
     <script>
         var map = L.map('map', { minZoom: -2, maxZoom: 4, crs: L.CRS.Simple });
 
-        // Floor 1 data
-        var floor1 = {
-            image: 'campus.png',
-            bounds: [[0, 0], [302, 754]],
-            markers: [
-                { name: "Food Court 1", coords: [214.83, 717.00] },
+        // Floor Data
+        var floors = {
+            1: {
+                image: 'campus.png',
+                bounds: [[0, 0], [302, 754]],
+                markers: [
+                     { name: "Food Court 1", coords: [214.83, 717.00] },
                 { name: "Food Court 2", coords: [66.75, 717.00] },
                 { name: "Auditorium 1", coords: [250.85, 601.00] },
                 { name: "Auditorium 2", coords: [54.75, 601.00] },
@@ -124,55 +148,45 @@
                
                 { name: "Principal Office", coords: [36.87, 11.50] },
                 { name: "Secretary Office", coords: [34.37, 32.00] }
-            ]
+                ]
+            },
+            2: {
+                image: 'floor1.png',
+                bounds: [[0, 0], [301, 567]],
+                markers: [
+                    { name: "Computer Lab", coords: [214.83, 617.00] },
+                    { name: "Lecture Hall 1", coords: [200.85, 601.00] }
+                ]
+            }
         };
 
-        // Floor 2 data
-        var floor2 = {
-            image: 'floor1.png',
-            bounds: [[0, 0], [301, 567]],
-            markers: [
-                { name: "Computer Lab", coords: [214.83, 617.00] },
-                { name: "Lecture Hall 1", coords: [200.85, 601.00] },
-                { name: "Lecture Hall 2", coords: [250.85, 551.00] },
-                { name: "Physics Lab", coords: [100.77, 512.00] },
-                { name: "Chemistry Lab", coords: [80.77, 512.00] }
-            ]
-        };
-
-        var currentFloor = floor1;
-        var imageOverlay = L.imageOverlay(currentFloor.image, currentFloor.bounds).addTo(map);
-        map.fitBounds(currentFloor.bounds);
+        var currentFloor = 1;
+        var imageOverlay = L.imageOverlay(floors[currentFloor].image, floors[currentFloor].bounds).addTo(map);
+        map.fitBounds(floors[currentFloor].bounds);
         var icon = L.icon({ iconUrl: 'ok.png', iconSize: [20, 20] });
         var roomMarkers = [];
 
-        function toggleRooms() {
-            if (roomMarkers.length) {
-                roomMarkers.forEach(marker => map.removeLayer(marker));
-                roomMarkers = [];
-            } else {
-                currentFloor.markers.forEach(room => {
-                    var marker = L.marker(room.coords, { icon }).addTo(map)
-                        .bindTooltip(room.name, { permanent: false, direction: 'top' });
-                    roomMarkers.push(marker);
-                });
-            }
-        }
-
-        function switchFloor(floor) {
-            // Remove old markers
+        function addMarkers() {
+            // Clear existing markers
             roomMarkers.forEach(marker => map.removeLayer(marker));
             roomMarkers = [];
 
-            if (floor === 1) {
-                currentFloor = floor1;
-            } else {
-                currentFloor = floor2;
-            }
+            // Add new markers
+            floors[currentFloor].markers.forEach(room => {
+                var marker = L.marker(room.coords, { icon }).addTo(map)
+                    .bindTooltip(room.name, { permanent: false, direction: 'top' });
+                roomMarkers.push(marker);
+            });
+        }
 
+        function switchFloor(floor) {
+            if (floor === currentFloor) return;
+
+            currentFloor = floor;
             map.eachLayer(layer => map.removeLayer(layer));
-            imageOverlay = L.imageOverlay(currentFloor.image, currentFloor.bounds).addTo(map);
-            map.fitBounds(currentFloor.bounds);
+            imageOverlay = L.imageOverlay(floors[floor].image, floors[floor].bounds).addTo(map);
+            map.fitBounds(floors[floor].bounds);
+            addMarkers();
         }
 
         function highlightRoom(room) {
@@ -180,12 +194,22 @@
             var marker = L.marker(room.coords, { icon }).addTo(map)
                 .bindTooltip(room.name, { permanent: true, direction: 'top' });
 
-            setTimeout(() => map.removeLayer(marker), 3000);
+            let blinkCount = 0;
+            let blinkInterval = setInterval(() => {
+                marker.setOpacity(blinkCount % 2 === 0 ? 0.3 : 1);
+                blinkCount++;
+                if (blinkCount > 5) {
+                    clearInterval(blinkInterval);
+                    map.removeLayer(marker);
+                }
+            }, 400);
         }
 
         function searchRoom() {
-            var searchValue = document.getElementById("search-input").value.toLowerCase();
-            var foundRoom = currentFloor.markers.find(room => room.name.toLowerCase().includes(searchValue));
+            var searchValue = document.getElementById("search-input").value.trim().toLowerCase();
+            if (!searchValue) return alert("Please enter a room name!");
+
+            var foundRoom = floors[currentFloor].markers.find(room => room.name.toLowerCase().includes(searchValue));
 
             if (foundRoom) {
                 highlightRoom(foundRoom);
@@ -195,7 +219,9 @@
         }
 
         document.getElementById("search-button").addEventListener("click", searchRoom);
+        addMarkers();
     </script>
 </body>
 </html>
+
 
