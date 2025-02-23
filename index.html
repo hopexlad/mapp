@@ -3,57 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KPR Interactive Map</title>
+    <title>Interactive Campus Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-        body, html {
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-        }
-        .screen {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: url('https://kprcas.ac.in/file/wp-content/uploads/2024/12/kprcas-1052x468.jpg') no-repeat center center/cover;
-            transition: opacity 0.9s;
-        }
-        .hidden { opacity: 0; pointer-events: none; }
-        .logo {
-            width: 300px;
-            height: 300px;
-            transition: transform 0.3s ease-in-out;
-        }
-        .logo:hover { transform: scale(1.1); }
-        .button {
-            margin: 10px;
-            padding: 12px 20px;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: background 0.3s;
-            width: 200px;
-        }
-        .button-green { background: green; color: white; }
-        #map-container {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: none;
-        }
-        #map { width: 100%; height: 100%; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+        #map { width: 100vw; height: 100vh; }
+
+        /* UI Buttons */
         .ui-container {
             position: absolute;
             top: 10px;
@@ -62,16 +18,20 @@
             flex-direction: column;
             z-index: 1001;
         }
-        .ui-container button {
+
+        .button {
             margin: 5px 0;
             padding: 10px;
-            width: 140px;
+            width: 80px;
+            text-align: center;
             background: green;
             color: white;
             border: none;
             cursor: pointer;
             border-radius: 5px;
         }
+
+        /* Search Bar */
         .search-container {
             position: absolute;
             top: 10px;
@@ -84,12 +44,14 @@
             display: flex;
             align-items: center;
         }
+
         #search-input {
             width: 200px;
             padding: 5px;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
+
         #search-button {
             margin-left: 5px;
             padding: 5px 10px;
@@ -99,123 +61,198 @@
             cursor: pointer;
             border-radius: 5px;
         }
+
+        /* Chatbot Styles */
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1003;
+        }
+
+        .chatbot-header {
+            background: green;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .chatbot-messages {
+            height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chatbot-input-container {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        .chatbot-input {
+            flex: 1;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .chatbot-send {
+            background: green;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin-left: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .chatbot-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: green;
+            color: white;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 1004;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .chatbot-message {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 5px;
+            max-width: 70%;
+        }
+
+        .chatbot-message.user {
+            background: lightblue;
+            align-self: flex-end;
+        }
+
+        .chatbot-message.bot {
+            background: lightgray;
+            align-self: flex-start;
+        }
+
     </style>
 </head>
 <body>
-    <div id="welcomeScreen" class="screen">
-        <img src="LOGO_KPR.jpg" class="logo" alt="KPR Logo">
+
+    <!-- Search Bar -->
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Search rooms..." />
+        <button id="search-button">Search</button>
     </div>
-    <div id="map-container">
-        <div class="search-container">
-            <input type="text" id="search-input" placeholder="Search rooms..." />
-            <button id="search-button">Search</button>
-        </div>
-        <div class="ui-container">
-            <button onclick="toggleRooms()">Toggle Rooms</button>
-            <button onclick="showMyLocation()">Show My Location</button>
-            <button onclick="goToFrontPage()">Front Page</button>
-        </div>
-        <div id="map"></div>
+
+    <!-- Right Side UI Buttons -->
+    <div class="ui-container">
+        <button class="button" onclick="toggleRooms()">Rooms</button>
     </div>
+
+    <!-- Chatbot UI -->
+    <div class="chatbot-container" id="chatbot">
+        <div class="chatbot-header">Campus Assistant</div>
+        <div class="chatbot-messages" id="chatbot-messages"></div>
+        <div class="chatbot-input-container">
+            <input type="text" id="chatbot-input" class="chatbot-input" placeholder="Ask me anything..." />
+            <button class="chatbot-send" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <div class="chatbot-toggle" onclick="toggleChatbot()">💬</div>
+
+    <div id="map"></div>
+
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        let userMarker = null;
-        setTimeout(() => {
-            document.getElementById('welcomeScreen').classList.add('hidden');
-            setTimeout(() => {
-                document.getElementById('welcomeScreen').style.display = 'none';
-                document.getElementById('map-container').style.display = 'block';
-                initializeMap();
-            }, 1000);
-        }, 3000);
-        function initializeMap() {
-            var map = L.map('map', { minZoom: -2, maxZoom: 4, crs: L.CRS.Simple });
-            var campusBounds = [[0, 0], [302, 754]];markers: [
-                    { name: "Food Court 1", coords: [214.83, 717.00] },
-                { name: "Food Court 2", coords: [66.75, 717.00] },
-                { name: "Auditorium 1", coords: [250.85, 601.00] },
-                { name: "Auditorium 2", coords: [54.75, 601.00] },
-                { name: "Seminar Hall", coords: [154.80, 610.00] },
-                { name: "Hostelers Mess", coords: [111.78, 603.00] },
-                { name: "Mess", coords: [190.82, 603.00] },
-                { name: "Lab 4", coords: [201.83, 514.00] },
-                { name: "Lab 3", coords: [102.77, 512.00] },
+        var map = L.map('map', { minZoom: -2, maxZoom: 4, crs: L.CRS.Simple });
+
+        var campus = {
+            image: 'campus.png',
+            bounds: [[0, 0], [302, 754]],
+            markers: [
                 { name: "Library", coords: [47.74, 512.00] },
-                { name: "NCC", coords: [33.74, 471.00] },
                 { name: "OAT", coords: [150.80, 429.00] },
-                { name: "Lab 5", coords: [264.86, 482.00] },
-                { name: "PEA", coords: [263.86, 385.00] },
-                { name: "Stock Room", coords: [264.84, 353.00] },
-                { name: "Transport Office", coords: [262.86, 329.00] },
-                { name: "Sick Room", coords: [206.83, 351.00] },
-                { name: "CG114", coords: [181.82, 355.00] },
-                { name: "CG113", coords: [119.78, 354.00] },
-                { name: "CG112", coords: [93.77, 354.00] },
-                { name: "Lab 1", coords: [38.74, 377.00] },
-                { name: "Zig-Zag", coords: [271.87, 263.00] },
-                { name: "Boys Restroom", coords: [33.87, 306.50] },
-                { name: "Girls Restroom", coords: [35.87, 233.00] },
-                { name: "Admission Office", coords: [263.99, 193.00] },
-                { name: "Falcon Hall", coords: [264.49, 152.50] },
-                { name: "Office", coords: [196.46, 171.00] },
-                { name: "Exam Cell", coords: [107.91, 172.50] },
-                { name: "Guest Waiting", coords: [33.87, 152.50] },
-                { name: "Oasis", coords: [33.87, 65.00] },
-                { name: "Placement Waiting Room", coords: [225.98, 24.00] },
-                { name: "Master Board Room", coords: [109.41, 16.00] },
-                { name: "Oak Leaf", coords: [74.89, 18.00] },
-                
-                { name: "Principal Office", coords: [36.87, 11.50] },
-                { name: "Secretary Office", coords: [34.37, 32.00] }
-            
-                ]
-            };
-            var imageOverlay = L.imageOverlay('campus.png', campusBounds).addTo(map);
-            map.fitBounds(campusBounds);
-            var roomMarkers = [];
-            var icon = L.icon({ iconUrl: 'ok.png', iconSize: [20, 20] });
-            function toggleRooms() {
-                if (roomMarkers.length) {
-                    roomMarkers.forEach(marker => map.removeLayer(marker));
-                    roomMarkers = [];
-                } else {
-                    // Add rooms if toggled on
-                }
-            }
-            function searchRoom() {
-                var searchValue = document.getElementById("search-input").value.toLowerCase();
-                // Implement search logic
-            }
-            function showMyLocation() {
-                if (!navigator.geolocation) {
-                    alert("Geolocation is not supported by your browser.");
-                    return;
-                }
-                navigator.geolocation.getCurrentPosition(position => {
-                    var lat = position.coords.latitude;
-                    var lon = position.coords.longitude;
-                    if (userMarker) {
-                        map.removeLayer(userMarker);
-                    }
-                    var blueIcon = L.icon({ iconUrl: 'https://leafletjs.com/examples/custom-icons/leaf-blue.png', iconSize: [25, 41] });
-                    userMarker = L.marker([lat, lon], { icon: blueIcon }).addTo(map)
-                        .bindPopup("You are here").openPopup();
-                    map.setView([lat, lon], 2);
-                }, () => {
-                    alert("Unable to retrieve your location.");
+                { name: "Principal Office", coords: [36.87, 11.50] }
+            ]
+        };
+
+        var imageOverlay = L.imageOverlay(campus.image, campus.bounds).addTo(map);
+        map.fitBounds(campus.bounds);
+
+        var roomMarkers = [];
+        var icon = L.icon({ iconUrl: 'ok.png', iconSize: [20, 20] });
+
+        function toggleRooms() {
+            if (roomMarkers.length) {
+                roomMarkers.forEach(marker => map.removeLayer(marker));
+                roomMarkers = [];
+            } else {
+                campus.markers.forEach(room => {
+                    var marker = L.marker(room.coords, { icon }).addTo(map)
+                        .bindTooltip(room.name, { permanent: false, direction: 'top' });
+                    roomMarkers.push(marker);
                 });
             }
-            document.getElementById("search-button").addEventListener("click", searchRoom);
-            window.toggleRooms = toggleRooms;
-            window.showMyLocation = showMyLocation;
         }
-        function goToFrontPage() {
-            document.getElementById('map-container').style.display = 'none';
-            document.getElementById('welcomeScreen').style.display = 'flex';
-            document.getElementById('welcomeScreen').classList.remove('hidden');
-            setTimeout(() => location.reload(), 500);
+
+        function searchRoom() {
+            var searchValue = document.getElementById("search-input").value.toLowerCase();
+            var foundRoom = campus.markers.find(room => room.name.toLowerCase().includes(searchValue));
+
+            if (foundRoom) {
+                map.setView(foundRoom.coords, 2);
+                var marker = L.marker(foundRoom.coords, { icon }).addTo(map)
+                    .bindTooltip(foundRoom.name, { permanent: true, direction: 'top' });
+                
+                setTimeout(() => map.removeLayer(marker), 3000);
+            } else {
+                alert("Room not found!");
+            }
         }
+
+        document.getElementById("search-button").addEventListener("click", searchRoom);
+
+        function toggleChatbot() {
+            var chatbot = document.getElementById("chatbot");
+            chatbot.style.display = chatbot.style.display === "flex" ? "none" : "flex";
+        }
+
+        function sendMessage() {
+            var input = document.getElementById("chatbot-input");
+            var message = input.value.trim();
+            if (!message) return;
+
+            var messagesContainer = document.getElementById("chatbot-messages");
+            messagesContainer.innerHTML += `<div class="chatbot-message user">${message}</div>`;
+
+            setTimeout(() => {
+                messagesContainer.innerHTML += `<div class="chatbot-message bot">I will get back to you!</div>`;
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 1000);
+
+            input.value = "";
+        }
+
     </script>
 </body>
 </html>
-
