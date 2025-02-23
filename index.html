@@ -8,132 +8,28 @@
     <style>
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
         #map { width: 100vw; height: 100vh; }
-
-        /* UI Buttons */
-        .ui-container {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            flex-direction: column;
-            z-index: 1001;
-        }
-
-        .button {
-            margin: 5px 0;
-            padding: 10px;
-            width: 80px;
-            text-align: center;
-            background: green;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        /* Search Bar */
-        .search-container {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1002;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 5px;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-        }
-
-        #search-input {
-            width: 200px;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        #search-button {
-            margin-left: 5px;
-            padding: 5px 10px;
-            border: none;
-            background: green;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        /* Chatbot UI */
-        .chat-container {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 300px;
-            max-height: 400px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            display: none;
-            flex-direction: column;
-            z-index: 1003;
-        }
-
-        .chat-header {
-            background: green;
-            color: white;
-            padding: 10px;
-            text-align: center;
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .chat-messages {
-            padding: 10px;
-            height: 300px;
-            overflow-y: auto;
-        }
-
-        .chat-input {
-            display: flex;
-            border-top: 1px solid #ddd;
-        }
-
-        #chat-input {
-            flex: 1;
-            padding: 8px;
-            border: none;
-            border-bottom-left-radius: 10px;
-            outline: none;
-        }
-
-        #send-button {
-            padding: 8px;
-            background: green;
-            color: white;
-            border: none;
-            border-bottom-right-radius: 10px;
-            cursor: pointer;
-        }
+        .search-container { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1002; }
+        #search-input { width: 200px; padding: 5px; }
+        #search-button { padding: 5px; background: green; color: white; }
+        .chat-container { position: absolute; bottom: 20px; right: 20px; width: 300px; max-height: 400px; background: white; display: none; z-index: 1003; }
+        .chat-header { background: green; color: white; padding: 10px; cursor: pointer; }
+        .chat-messages { padding: 10px; height: 300px; overflow-y: auto; }
+        .chat-input { display: flex; border-top: 1px solid #ddd; }
+        #chat-input { flex: 1; padding: 8px; }
+        #send-button { padding: 8px; background: green; color: white; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <!-- Search Bar -->
     <div class="search-container">
         <input type="text" id="search-input" placeholder="Search rooms..." />
         <button id="search-button">Search</button>
     </div>
 
-    <!-- Right Side UI Buttons -->
-    <div class="ui-container">
-        <button class="button" onclick="toggleRooms()">Rooms</button>
-        <button class="button" onclick="toggleChat()">Chat</button>
-    </div>
+    <button onclick="toggleChat()" style="position: absolute; top: 10px; right: 10px; z-index: 1001;">Chat</button>
 
     <div id="map"></div>
 
-    <!-- Chatbot UI -->
     <div class="chat-container" id="chat-container">
         <div class="chat-header" onclick="toggleChat()">Campus Chatbot</div>
         <div class="chat-messages" id="chat-messages"></div>
@@ -161,20 +57,14 @@
         var imageOverlay = L.imageOverlay(campus.image, campus.bounds).addTo(map);
         map.fitBounds(campus.bounds);
 
-        var roomMarkers = [];
         var icon = L.icon({ iconUrl: 'ok.png', iconSize: [20, 20] });
 
-        function toggleRooms() {
-            if (roomMarkers.length) {
-                roomMarkers.forEach(marker => map.removeLayer(marker));
-                roomMarkers = [];
-            } else {
-                campus.markers.forEach(room => {
-                    var marker = L.marker(room.coords, { icon }).addTo(map)
-                        .bindTooltip(room.name, { permanent: false, direction: 'top' });
-                    roomMarkers.push(marker);
-                });
-            }
+        function highlightRoom(room) {
+            map.setView(room.coords, 3);
+            var marker = L.marker(room.coords, { icon }).addTo(map)
+                .bindTooltip(room.name, { permanent: true, direction: 'top' });
+
+            setTimeout(() => map.removeLayer(marker), 3000);
         }
 
         function searchRoom() {
@@ -182,11 +72,7 @@
             var foundRoom = campus.markers.find(room => room.name.toLowerCase().includes(searchValue));
 
             if (foundRoom) {
-                map.setView(foundRoom.coords, 3);
-                var highlightMarker = L.marker(foundRoom.coords, { icon }).addTo(map)
-                    .bindTooltip(foundRoom.name, { permanent: true, direction: 'top' });
-
-                setTimeout(() => map.removeLayer(highlightMarker), 3000);
+                highlightRoom(foundRoom);
             } else {
                 alert("Room not found!");
             }
@@ -194,10 +80,9 @@
 
         document.getElementById("search-button").addEventListener("click", searchRoom);
 
-        // Chatbot functions
         function toggleChat() {
             var chatBox = document.getElementById("chat-container");
-            chatBox.style.display = chatBox.style.display === "none" ? "flex" : "none";
+            chatBox.style.display = chatBox.style.display === "none" ? "block" : "none";
         }
 
         function sendMessage() {
@@ -214,9 +99,12 @@
 
         function getChatResponse(text) {
             text = text.toLowerCase();
-
             var room = campus.markers.find(r => text.includes(r.name.toLowerCase()));
-            if (room) return `The ${room.name} is located in our campus. You can search for it!`;
+
+            if (room) {
+                highlightRoom(room);
+                return `The ${room.name} is located on the campus. I've highlighted it on the map for you!`;
+            }
 
             if (text.includes("hello")) return "Hello! How can I assist you?";
             if (text.includes("where is")) return "Can you specify the location you are looking for?";
