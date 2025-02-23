@@ -9,155 +9,85 @@
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
         #map { width: 100vw; height: 100vh; }
 
-        /* Navigation Menu */
-        .menu {
+        /* UI Buttons */
+        .ui-container {
             position: absolute;
-            left: -250px;
-            top: 0;
-            width: 250px;
-            height: 100%;
-            background: #2c3e50;
-            color: white;
-            transition: left 0.3s ease;
-            padding: 15px;
-            z-index: 1002;
-        }
-
-        .menu.open { left: 0; }
-
-        .menu h2 { text-align: center; margin-bottom: 10px; }
-
-        .menu .search-box {
-            width: 100%;
-            padding: 5px;
-            border-radius: 5px;
-            border: none;
-            margin-bottom: 10px;
-        }
-
-        .menu button { width: 100%; margin: 5px 0; padding: 8px; cursor: pointer; border: none; }
-
-        .menu-btn {
-            position: absolute;
-            left: 10px;
-            top: 10px;
-            background: green;
-            color: white;
-            padding: 10px;
-            cursor: pointer;
-            z-index: 1003;
-            border: none;
-            border-radius: 5px;
-        }
-
-        /* Floor Buttons */
-        .floor-buttons {
-            position: absolute;
-            top: 10px;
+            bottom: 120px;
             right: 20px;
             display: flex;
-            gap: 10px;
-            z-index: 1003;
+            flex-direction: column;
+            z-index: 1001;
         }
 
-        .floor-buttons button {
+        .button {
+            margin: 5px 0;
             padding: 10px;
-            background: green;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        /* Chat Box */
-        .chat-container {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 300px;
-            background: white;
-            display: none;
-            z-index: 1003;
-            border-radius: 5px;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
-        }
-
-        .chat-header {
-            background: green;
-            color: white;
-            padding: 10px;
-            cursor: pointer;
+            width: 120px;
             text-align: center;
-            border-radius: 5px 5px 0 0;
+            background: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
         }
 
-        .chat-messages { padding: 10px; height: 300px; overflow-y: auto; }
+        /* Search Bar */
+        .search-container {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1002;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
 
-        .chat-input { display: flex; border-top: 1px solid #ddd; }
+        #search-input {
+            width: 200px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
 
-        #chat-input { flex: 1; padding: 8px; border: none; }
-
-        #send-button {
-            padding: 8px;
+        #search-button {
+            margin-left: 5px;
+            padding: 5px 10px;
+            border: none;
             background: green;
             color: white;
             cursor: pointer;
-            border: none;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
 
-    <!-- Side Menu -->
-    <button class="menu-btn" onclick="toggleMenu()">☰ Menu</button>
-    <div class="menu" id="menu">
-        <h2>Campus Map</h2>
-        <input type="text" id="search-box" class="search-box" placeholder="Search rooms...">
-        <button onclick="searchRoom()">Search</button>
-        <h3>Classes</h3>
-        <button onclick="highlightRoom('CG114')">CG114</button>
-        <button onclick="highlightRoom('CG113')">CG113</button>
-        <button onclick="highlightRoom('CG112')">CG112</button>
-        
-        <h3>Offices</h3>
-        <button onclick="highlightRoom('Admission Office')">Admission Office</button>
-        <button onclick="highlightRoom('Principal Office')">Principal Office</button>
-        <button onclick="highlightRoom('Secretary Office')">Secretary Office</button>
-        
-        <h3>Labs</h3>
-        <button onclick="highlightRoom('Lab 1')">Lab 1</button>
-        <button onclick="highlightRoom('Lab 2')">Lab 2</button>
-        
-        <h3>Others</h3>
-        <button onclick="highlightRoom('Library')">Library</button>
-        <button onclick="highlightRoom('Food Court')">Food Court</button>
+    <!-- Search Bar -->
+    <div class="search-container">
+        <input type="text" id="search-input" placeholder="Search rooms..." />
+        <button id="search-button">Search</button>
     </div>
 
-    <!-- Floor Buttons -->
-    <div class="floor-buttons">
-        <button onclick="switchFloor(1)">Floor 1</button>
-        <button onclick="switchFloor(2)">Floor 2</button>
+    <!-- UI Buttons -->
+    <div class="ui-container">
+        <button class="button" onclick="switchFloor(1)">Floor 1</button>
+        <button class="button" onclick="switchFloor(2)">Floor 2</button>
     </div>
 
     <div id="map"></div>
 
-    <!-- Chatbot -->
-    <div class="chat-container" id="chat-container">
-        <div class="chat-header" onclick="toggleChat()">Campus Chatbot</div>
-        <div class="chat-messages" id="chat-messages"></div>
-        <div class="chat-input">
-            <input type="text" id="chat-input" placeholder="Ask me something..." onkeypress="handleKeyPress(event)">
-            <button id="send-button" onclick="sendMessage()">Send</button>
-        </div>
-    </div>
-
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         var map = L.map('map', { minZoom: -2, maxZoom: 4, crs: L.CRS.Simple });
-        var icon = L.icon({ iconUrl: 'ok.png', iconSize: [20, 20] });
 
-        var floors = {
-            1: { image: 'floor1.png', bounds: [[0, 0], [302, 754]], markers: [
+        // Floor 1 data
+        var floor1 = {
+            image: 'campus.png',
+            bounds: [[0, 0], [302, 754]],
+            markers: [
                 { name: "Food Court 1", coords: [214.83, 717.00] },
                 { name: "Food Court 2", coords: [66.75, 717.00] },
                 { name: "Auditorium 1", coords: [250.85, 601.00] },
@@ -194,47 +124,78 @@
                
                 { name: "Principal Office", coords: [36.87, 11.50] },
                 { name: "Secretary Office", coords: [34.37, 32.00] }
-           
-            ]},
-            2: { image: 'floor1.png', bounds: [[0, 0], [301,567 ]], markers: [
-                { name: "Lab 2", coords: [102.77, 512.00] },
-                { name: "Principal Office", coords: [36.87, 11.50] },
-                { name: "Admission Office", coords: [263.99, 193.00] }
-            ]}
+            ]
         };
 
-        var currentFloor = 1;
-        var imageOverlay, roomMarkers = [];
+        // Floor 2 data
+        var floor2 = {
+            image: 'campus_floor2.png',
+            bounds: [[0, 0], [301, 567]],
+            markers: [
+                { name: "Computer Lab", coords: [214.83, 617.00] },
+                { name: "Lecture Hall 1", coords: [200.85, 601.00] },
+                { name: "Lecture Hall 2", coords: [250.85, 551.00] },
+                { name: "Physics Lab", coords: [100.77, 512.00] },
+                { name: "Chemistry Lab", coords: [80.77, 512.00] }
+            ]
+        };
 
-        function loadFloor(floor) {
-            if (imageOverlay) map.removeLayer(imageOverlay);
-            roomMarkers.forEach(marker => map.removeLayer(marker));
-            roomMarkers = [];
+        var currentFloor = floor1;
+        var imageOverlay = L.imageOverlay(currentFloor.image, currentFloor.bounds).addTo(map);
+        map.fitBounds(currentFloor.bounds);
+        var icon = L.icon({ iconUrl: 'ok.png', iconSize: [20, 20] });
+        var roomMarkers = [];
 
-            imageOverlay = L.imageOverlay(floors[floor].image, floors[floor].bounds).addTo(map);
-            map.fitBounds(floors[floor].bounds);
-
-            floors[floor].markers.forEach(room => {
-                var marker = L.marker(room.coords, { icon }).addTo(map)
-                    .bindTooltip(room.name, { permanent: false, direction: 'top' });
-                roomMarkers.push(marker);
-            });
+        function toggleRooms() {
+            if (roomMarkers.length) {
+                roomMarkers.forEach(marker => map.removeLayer(marker));
+                roomMarkers = [];
+            } else {
+                currentFloor.markers.forEach(room => {
+                    var marker = L.marker(room.coords, { icon }).addTo(map)
+                        .bindTooltip(room.name, { permanent: false, direction: 'top' });
+                    roomMarkers.push(marker);
+                });
+            }
         }
 
         function switchFloor(floor) {
-            currentFloor = floor;
-            loadFloor(floor);
+            // Remove old markers
+            roomMarkers.forEach(marker => map.removeLayer(marker));
+            roomMarkers = [];
+
+            if (floor === 1) {
+                currentFloor = floor1;
+            } else {
+                currentFloor = floor2;
+            }
+
+            map.eachLayer(layer => map.removeLayer(layer));
+            imageOverlay = L.imageOverlay(currentFloor.image, currentFloor.bounds).addTo(map);
+            map.fitBounds(currentFloor.bounds);
         }
 
-        function highlightRoom(roomName) {
-            var room = floors[currentFloor].markers.find(r => r.name === roomName);
-            if (room) map.setView(room.coords, 3);
+        function highlightRoom(room) {
+            map.setView(room.coords, 3);
+            var marker = L.marker(room.coords, { icon }).addTo(map)
+                .bindTooltip(room.name, { permanent: true, direction: 'top' });
+
+            setTimeout(() => map.removeLayer(marker), 3000);
         }
 
-        function toggleMenu() { document.getElementById("menu").classList.toggle("open"); }
-        function toggleChat() { document.getElementById("chat-container").style.display ^= "none"; }
+        function searchRoom() {
+            var searchValue = document.getElementById("search-input").value.toLowerCase();
+            var foundRoom = currentFloor.markers.find(room => room.name.toLowerCase().includes(searchValue));
 
-        loadFloor(1);
+            if (foundRoom) {
+                highlightRoom(foundRoom);
+            } else {
+                alert("Room not found on this floor!");
+            }
+        }
+
+        document.getElementById("search-button").addEventListener("click", searchRoom);
     </script>
 </body>
 </html>
+
