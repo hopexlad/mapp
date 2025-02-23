@@ -9,55 +9,62 @@
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
         #map { width: 100vw; height: 100vh; }
 
-        /* UI Buttons */
-        .ui-container {
+        /* Navigation Menu */
+        .menu {
             position: absolute;
-            bottom: 120px;
-            right: 20px;
-            display: flex;
-            flex-direction: column;
-            z-index: 1001;
+            left: -250px;
+            top: 0;
+            width: 250px;
+            height: 100%;
+            background: #2c3e50;
+            color: white;
+            transition: left 0.3s ease;
+            padding: 15px;
+            z-index: 1002;
         }
 
-        .button {
-            margin: 5px 0;
-            padding: 10px;
-            width: 100px;
-            text-align: center;
+        .menu.open { left: 0; }
+
+        .menu h2 { text-align: center; margin-bottom: 10px; }
+
+        .menu .search-box {
+            width: 100%;
+            padding: 5px;
+            border-radius: 5px;
+            border: none;
+            margin-bottom: 10px;
+        }
+
+        .menu button { width: 100%; margin: 5px 0; padding: 8px; cursor: pointer; border: none; }
+
+        .menu-btn {
+            position: absolute;
+            left: 10px;
+            top: 10px;
             background: green;
             color: white;
-            border: none;
+            padding: 10px;
             cursor: pointer;
+            z-index: 1003;
+            border: none;
             border-radius: 5px;
         }
 
-        /* Search Bar */
-        .search-container {
+        /* Floor Buttons */
+        .floor-buttons {
             position: absolute;
             top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1002;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 5px;
-            border-radius: 5px;
+            right: 20px;
             display: flex;
-            align-items: center;
+            gap: 10px;
+            z-index: 1003;
         }
 
-        #search-input {
-            width: 200px;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        #search-button {
-            margin-left: 5px;
-            padding: 5px 10px;
-            border: none;
+        .floor-buttons button {
+            padding: 10px;
             background: green;
             color: white;
+            border: none;
             cursor: pointer;
             border-radius: 5px;
         }
@@ -68,7 +75,6 @@
             bottom: 20px;
             right: 20px;
             width: 300px;
-            max-height: 400px;
             background: white;
             display: none;
             z-index: 1003;
@@ -85,22 +91,11 @@
             border-radius: 5px 5px 0 0;
         }
 
-        .chat-messages {
-            padding: 10px;
-            height: 300px;
-            overflow-y: auto;
-        }
+        .chat-messages { padding: 10px; height: 300px; overflow-y: auto; }
 
-        .chat-input {
-            display: flex;
-            border-top: 1px solid #ddd;
-        }
+        .chat-input { display: flex; border-top: 1px solid #ddd; }
 
-        #chat-input {
-            flex: 1;
-            padding: 8px;
-            border: none;
-        }
+        #chat-input { flex: 1; padding: 8px; border: none; }
 
         #send-button {
             padding: 8px;
@@ -113,16 +108,35 @@
 </head>
 <body>
 
-    <!-- Search Bar -->
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search rooms..." />
-        <button id="search-button">Search</button>
+    <!-- Side Menu -->
+    <button class="menu-btn" onclick="toggleMenu()">☰ Menu</button>
+    <div class="menu" id="menu">
+        <h2>Campus Map</h2>
+        <input type="text" id="search-box" class="search-box" placeholder="Search rooms...">
+        <button onclick="searchRoom()">Search</button>
+        <h3>Classes</h3>
+        <button onclick="highlightRoom('CG114')">CG114</button>
+        <button onclick="highlightRoom('CG113')">CG113</button>
+        <button onclick="highlightRoom('CG112')">CG112</button>
+        
+        <h3>Offices</h3>
+        <button onclick="highlightRoom('Admission Office')">Admission Office</button>
+        <button onclick="highlightRoom('Principal Office')">Principal Office</button>
+        <button onclick="highlightRoom('Secretary Office')">Secretary Office</button>
+        
+        <h3>Labs</h3>
+        <button onclick="highlightRoom('Lab 1')">Lab 1</button>
+        <button onclick="highlightRoom('Lab 2')">Lab 2</button>
+        
+        <h3>Others</h3>
+        <button onclick="highlightRoom('Library')">Library</button>
+        <button onclick="highlightRoom('Food Court')">Food Court</button>
     </div>
 
-    <!-- UI Buttons (Room Toggle & Chat) -->
-    <div class="ui-container">
-        <button class="button" onclick="toggleRooms()">Rooms</button>
-        <button class="button" onclick="toggleChat()">Chat</button>
+    <!-- Floor Buttons -->
+    <div class="floor-buttons">
+        <button onclick="switchFloor(1)">Floor 1</button>
+        <button onclick="switchFloor(2)">Floor 2</button>
     </div>
 
     <div id="map"></div>
@@ -140,11 +154,10 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         var map = L.map('map', { minZoom: -2, maxZoom: 4, crs: L.CRS.Simple });
+        var icon = L.icon({ iconUrl: 'ok.png', iconSize: [20, 20] });
 
-        var campus = {
-            image: 'campus.png',
-            bounds: [[0, 0], [302, 754]],
-            markers: [
+        var floors = {
+            1: { image: 'floor1.png', bounds: [[0, 0], [302, 754]], markers: [
                 { name: "Food Court 1", coords: [214.83, 717.00] },
                 { name: "Food Court 2", coords: [66.75, 717.00] },
                 { name: "Auditorium 1", coords: [250.85, 601.00] },
@@ -182,94 +195,46 @@
                 { name: "Principal Office", coords: [36.87, 11.50] },
                 { name: "Secretary Office", coords: [34.37, 32.00] }
            
-            ]
+            ]},
+            2: { image: 'floor1.png', bounds: [[0, 0], [301,567 ]], markers: [
+                { name: "Lab 2", coords: [102.77, 512.00] },
+                { name: "Principal Office", coords: [36.87, 11.50] },
+                { name: "Admission Office", coords: [263.99, 193.00] }
+            ]}
         };
 
-        var imageOverlay = L.imageOverlay(campus.image, campus.bounds).addTo(map);
-        map.fitBounds(campus.bounds);
+        var currentFloor = 1;
+        var imageOverlay, roomMarkers = [];
 
-        var icon = L.icon({ iconUrl: 'ok.png', iconSize: [20, 20] });
+        function loadFloor(floor) {
+            if (imageOverlay) map.removeLayer(imageOverlay);
+            roomMarkers.forEach(marker => map.removeLayer(marker));
+            roomMarkers = [];
 
-        var roomMarkers = [];
+            imageOverlay = L.imageOverlay(floors[floor].image, floors[floor].bounds).addTo(map);
+            map.fitBounds(floors[floor].bounds);
 
-        function toggleRooms() {
-            if (roomMarkers.length) {
-                roomMarkers.forEach(marker => map.removeLayer(marker));
-                roomMarkers = [];
-            } else {
-                campus.markers.forEach(room => {
-                    var marker = L.marker(room.coords, { icon }).addTo(map)
-                        .bindTooltip(room.name, { permanent: false, direction: 'top' });
-                    roomMarkers.push(marker);
-                });
-            }
+            floors[floor].markers.forEach(room => {
+                var marker = L.marker(room.coords, { icon }).addTo(map)
+                    .bindTooltip(room.name, { permanent: false, direction: 'top' });
+                roomMarkers.push(marker);
+            });
         }
 
-        function highlightRoom(room) {
-            map.setView(room.coords, 3);
-            var marker = L.marker(room.coords, { icon }).addTo(map)
-                .bindTooltip(room.name, { permanent: true, direction: 'top' });
-
-            setTimeout(() => map.removeLayer(marker), 3000);
+        function switchFloor(floor) {
+            currentFloor = floor;
+            loadFloor(floor);
         }
 
-        function searchRoom() {
-            var searchValue = document.getElementById("search-input").value.toLowerCase();
-            var foundRoom = campus.markers.find(room => room.name.toLowerCase().includes(searchValue));
-
-            if (foundRoom) {
-                highlightRoom(foundRoom);
-            } else {
-                alert("Room not found!");
-            }
+        function highlightRoom(roomName) {
+            var room = floors[currentFloor].markers.find(r => r.name === roomName);
+            if (room) map.setView(room.coords, 3);
         }
 
-        document.getElementById("search-button").addEventListener("click", searchRoom);
+        function toggleMenu() { document.getElementById("menu").classList.toggle("open"); }
+        function toggleChat() { document.getElementById("chat-container").style.display ^= "none"; }
 
-        function toggleChat() {
-            var chatBox = document.getElementById("chat-container");
-            chatBox.style.display = chatBox.style.display === "none" ? "block" : "none";
-        }
-
-        function sendMessage() {
-            var input = document.getElementById("chat-input").value.trim();
-            if (input === "") return;
-
-            addMessage("You: " + input, "user");
-
-            var response = getChatResponse(input);
-            setTimeout(() => addMessage("Bot: " + response, "bot"), 1000);
-
-            document.getElementById("chat-input").value = "";
-        }
-
-        function getChatResponse(text) {
-            text = text.toLowerCase();
-            var room = campus.markers.find(r => text.includes(r.name.toLowerCase()));
-
-            if (room) {
-                highlightRoom(room);
-                return `The ${room.name} is located on the campus. I've highlighted it on the map for you!`;
-            }
-
-            if (text.includes("hello")) return "Hello! How can I assist you?";
-            if (text.includes("where is")) return "Can you specify the location you are looking for?";
-            if (text.includes("thank")) return "You're welcome!";
-
-            return "I'm not sure about that, but I can help you with locations!";
-        }
-
-        function addMessage(msg, sender) {
-            var chatBox = document.getElementById("chat-messages");
-            var msgDiv = document.createElement("div");
-            msgDiv.innerText = msg;
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function handleKeyPress(event) {
-            if (event.key === "Enter") sendMessage();
-        }
+        loadFloor(1);
     </script>
 </body>
 </html>
