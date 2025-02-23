@@ -8,8 +8,6 @@
     <style>
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
         #map { width: 100vw; height: 100vh; }
-
-        /* UI Buttons */
         .ui-container {
             position: absolute;
             bottom: 120px;
@@ -18,7 +16,6 @@
             flex-direction: column;
             z-index: 1001;
         }
-
         .button {
             margin: 5px 0;
             padding: 10px;
@@ -30,8 +27,6 @@
             cursor: pointer;
             border-radius: 5px;
         }
-
-        /* Search Bar */
         .search-container {
             position: absolute;
             top: 10px;
@@ -44,14 +39,12 @@
             display: flex;
             align-items: center;
         }
-
         #search-input {
             width: 200px;
             padding: 5px;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-
         #search-button {
             margin-left: 5px;
             padding: 5px 10px;
@@ -61,8 +54,6 @@
             cursor: pointer;
             border-radius: 5px;
         }
-
-        /* Chat Box */
         .chat-container {
             position: absolute;
             bottom: 20px;
@@ -75,7 +66,6 @@
             border-radius: 5px;
             box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
         }
-
         .chat-header {
             background: green;
             color: white;
@@ -84,24 +74,20 @@
             text-align: center;
             border-radius: 5px 5px 0 0;
         }
-
         .chat-messages {
             padding: 10px;
             height: 300px;
             overflow-y: auto;
         }
-
         .chat-input {
             display: flex;
             border-top: 1px solid #ddd;
         }
-
         #chat-input {
             flex: 1;
             padding: 8px;
             border: none;
         }
-
         #send-button {
             padding: 8px;
             background: green;
@@ -112,22 +98,15 @@
     </style>
 </head>
 <body>
-
-    <!-- Search Bar -->
     <div class="search-container">
         <input type="text" id="search-input" placeholder="Search rooms..." />
         <button id="search-button">Search</button>
     </div>
-
-    <!-- UI Buttons (Room Toggle & Chat) -->
     <div class="ui-container">
         <button class="button" onclick="toggleRooms()">Rooms</button>
         <button class="button" onclick="toggleChat()">Chat</button>
     </div>
-
     <div id="map"></div>
-
-    <!-- Chatbot -->
     <div class="chat-container" id="chat-container">
         <div class="chat-header" onclick="toggleChat()">Campus Chatbot</div>
         <div class="chat-messages" id="chat-messages"></div>
@@ -136,16 +115,14 @@
             <button id="send-button" onclick="sendMessage()">Send</button>
         </div>
     </div>
-
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         var map = L.map('map', { minZoom: -2, maxZoom: 4, crs: L.CRS.Simple });
-
         var campus = {
             image: 'campus.png',
             bounds: [[0, 0], [302, 754]],
             markers: [
-                { name: "Food Court 1", coords: [214.83, 717.00] },
+                  { name: "Food Court 1", coords: [214.83, 717.00] },
                 { name: "Food Court 2", coords: [66.75, 717.00] },
                 { name: "Auditorium 1", coords: [250.85, 601.00] },
                 { name: "Auditorium 2", coords: [54.75, 601.00] },
@@ -184,14 +161,10 @@
             
             ]
         };
-
         var imageOverlay = L.imageOverlay(campus.image, campus.bounds).addTo(map);
         map.fitBounds(campus.bounds);
-
         var icon = L.icon({ iconUrl: 'ok.png', iconSize: [20, 20] });
-
         var roomMarkers = [];
-
         function toggleRooms() {
             if (roomMarkers.length) {
                 roomMarkers.forEach(marker => map.removeLayer(marker));
@@ -204,72 +177,45 @@
                 });
             }
         }
-
         function highlightRoom(room) {
             map.setView(room.coords, 3);
             var marker = L.marker(room.coords, { icon }).addTo(map)
                 .bindTooltip(room.name, { permanent: true, direction: 'top' });
-
             setTimeout(() => map.removeLayer(marker), 3000);
         }
-
         function searchRoom() {
             var searchValue = document.getElementById("search-input").value.toLowerCase();
             var foundRoom = campus.markers.find(room => room.name.toLowerCase().includes(searchValue));
-
             if (foundRoom) {
                 highlightRoom(foundRoom);
             } else {
                 alert("Room not found!");
             }
         }
-
         document.getElementById("search-button").addEventListener("click", searchRoom);
-
         function toggleChat() {
             var chatBox = document.getElementById("chat-container");
             chatBox.style.display = chatBox.style.display === "none" ? "block" : "none";
         }
-
         function sendMessage() {
             var input = document.getElementById("chat-input").value.trim();
             if (input === "") return;
-
             addMessage("You: " + input, "user");
-
-            var response = getChatResponse(input);
+            var response = "I'm not sure, but I can help you with locations!";
             setTimeout(() => addMessage("Bot: " + response, "bot"), 1000);
-
             document.getElementById("chat-input").value = "";
         }
-
-        function getChatResponse(text) {
-            text = text.toLowerCase();
-            var room = campus.markers.find(r => text.includes(r.name.toLowerCase()));
-
-            if (room) {
-                highlightRoom(room);
-                return `The ${room.name} is located on the campus. I've highlighted it on the map for you!`;
-            }
-
-            if (text.includes("hello")) return "Hello! How can I assist you?";
-            if (text.includes("where is")) return "Can you specify the location you are looking for?";
-            if (text.includes("thank")) return "You're welcome!";
-
-            return "I'm not sure about that, but I can help you with locations!";
-        }
-
-        function addMessage(msg, sender) {
+        function addMessage(msg) {
             var chatBox = document.getElementById("chat-messages");
             var msgDiv = document.createElement("div");
             msgDiv.innerText = msg;
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
-
         function handleKeyPress(event) {
             if (event.key === "Enter") sendMessage();
         }
     </script>
 </body>
 </html>
+
