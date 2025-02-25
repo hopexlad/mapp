@@ -3,147 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Campus Map</title>
+    <title>Navigation with User & A to B</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
-        #map { width: 100vw; height: 100vh; }
-
-        /* UI Buttons */
-        .ui-container {
-            position: absolute;
-            bottom: 120px;
-            right: 20px;
-            display: flex;
-            flex-direction: column;
-            z-index: 1001;
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; display: flex; height: 100vh; }
+        #sidebar {
+            width: 250px; padding: 15px; background: #f8f8f8; border-right: 1px solid #ddd;
+            display: flex; flex-direction: column; justify-content: center;
         }
-
-        .button {
-            margin: 5px 0;
-            padding: 10px;
-            width: 100px;
-            text-align: center;
-            background: green;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        /* Search Bar */
-        .search-container {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1002;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 5px;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-        }
-
-        #search-input {
-            width: 200px;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        #search-button {
-            margin-left: 5px;
-            padding: 5px 10px;
-            border: none;
-            background: green;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        /* Chat Box */
-        .chat-container {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 300px;
-            max-height: 400px;
-            background: white;
-            display: none;
-            z-index: 1003;
-            border-radius: 5px;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
-        }
-
-        .chat-header {
-            background: green;
-            color: white;
-            padding: 10px;
-            cursor: pointer;
-            text-align: center;
-            border-radius: 5px 5px 0 0;
-        }
-
-        .chat-messages {
-            padding: 10px;
-            height: 300px;
-            overflow-y: auto;
-        }
-
-        .chat-input {
-            display: flex;
-            border-top: 1px solid #ddd;
-        }
-
-        #chat-input {
-            flex: 1;
-            padding: 8px;
-            border: none;
-        }
-
-        #send-button {
-            padding: 8px;
-            background: green;
-            color: white;
-            cursor: pointer;
-            border: none;
-        }
+        #map { flex: 1; height: 100vh; }
+        input { width: 90%; padding: 8px; margin: 5px 0; }
+        button { padding: 10px; font-size: 14px; cursor: pointer; background: green; color: white; border: none; border-radius: 5px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <!-- Search Bar -->
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="Search rooms..." />
-        <button id="search-button">Search</button>
+    <!-- SIDEBAR (User Location Input) -->
+    <div id="sidebar">
+        <h3>Enter Your Location</h3>
+        <label>Latitude: <input type="text" id="userLat"></label>
+        <label>Longitude: <input type="text" id="userLon"></label>
+        <button onclick="setUserLocation()">Set My Location</button>
+        <hr>
+        <button onclick="drawRoute()">Navigate from A to B</button>
     </div>
 
-    <!-- UI Buttons (Room Toggle & Chat) -->
-    <div class="ui-container">
-        <button class="button" onclick="toggleRooms()">Rooms</button>
-        <button class="button" onclick="toggleChat()">Chat</button>
-    </div>
-
+    <!-- MAP -->
     <div id="map"></div>
-
-    <!-- Chatbot -->
-    <div class="chat-container" id="chat-container">
-        <div class="chat-header" onclick="toggleChat()">Campus Chatbot</div>
-        <div class="chat-messages" id="chat-messages"></div>
-        <div class="chat-input">
-            <input type="text" id="chat-input" placeholder="Ask me something..." onkeypress="handleKeyPress(event)">
-            <button id="send-button" onclick="sendMessage()">Send</button>
-        </div>
-    </div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         var map = L.map('map', { minZoom: -2, maxZoom: 4, crs: L.CRS.Simple });
 
         var campus = {
-            image: 'campus.png',
-            bounds: [[0, 0], [302, 754]],
+            image: 'campus.png', // Your floor plan image
+            bounds: [[0, 0], [302, 754]]
             markers: [
                 { name: "Food Court 1", coords: [214.83, 717.00] },
                 { name: "Food Court 2", coords: [66.75, 717.00] },
@@ -169,7 +63,7 @@
                 { name: "Zig-Zag", coords: [271.87, 263.00] },
                 { name: "Boys Restroom", coords: [33.87, 306.50] },
                 { name: "Girls Restroom", coords: [35.87, 233.00] },
-                { name: "Admission Office", coords: [263.99, 193.00] },
+                { name: "Admissions Office", coords: [263.99, 193.00] },
                 { name: "Falcon Hall", coords: [264.49, 152.50] },
                 { name: "Office", coords: [196.46, 171.00] },
                 { name: "Exam Cell", coords: [107.91, 172.50] },
@@ -188,88 +82,69 @@
         var imageOverlay = L.imageOverlay(campus.image, campus.bounds).addTo(map);
         map.fitBounds(campus.bounds);
 
-        var icon = L.icon({ iconUrl: 'ok.png', iconSize: [20, 20] });
+        // Predefined path from A to B
+        var pathPoints = [
+            [248.00, 152.00],  
+            [238.50, 152.25],  
+            [239.75, 162.75], 
+            [241.00, 178.25], 
+            [240.75, 192.25] 
+            [240.75, 207.50],  
+            [240.75, 229.25],  
+            [240.50, 252.75], 
+            [240.75, 274.75], 
+            [240.00, 294.25] 
+            [239.25, 315.75],  
+            [239.50, 339.50],  
+            [237.75, 376.00], // Another turn
+            [225.00, 377.75], // Another step
+            [204.00, 377.75] 
+            [203.50, 366.50],  // Start (A)
+           
+        ];
 
-        var roomMarkers = [];
+        // User location marker
+        var userMarker = null;
 
-        function toggleRooms() {
-            if (roomMarkers.length) {
-                roomMarkers.forEach(marker => map.removeLayer(marker));
-                roomMarkers = [];
-            } else {
-                campus.markers.forEach(room => {
-                    var marker = L.marker(room.coords, { icon }).addTo(map)
-                        .bindTooltip(room.name, { permanent: false, direction: 'top' });
-                    roomMarkers.push(marker);
-                });
-            }
-        }
+        function setUserLocation() {
+            var userLat = parseFloat(document.getElementById("userLat").value);
+            var userLon = parseFloat(document.getElementById("userLon").value);
 
-        function highlightRoom(room) {
-            map.setView(room.coords, 3);
-            var marker = L.marker(room.coords, { icon }).addTo(map)
-                .bindTooltip(room.name, { permanent: true, direction: 'top' });
-
-            setTimeout(() => map.removeLayer(marker), 3000);
-        }
-
-        function searchRoom() {
-            var searchValue = document.getElementById("search-input").value.toLowerCase();
-            var foundRoom = campus.markers.find(room => room.name.toLowerCase().includes(searchValue));
-
-            if (foundRoom) {
-                highlightRoom(foundRoom);
-            } else {
-                alert("Room not found!");
-            }
-        }
-
-        document.getElementById("search-button").addEventListener("click", searchRoom);
-
-        function toggleChat() {
-            var chatBox = document.getElementById("chat-container");
-            chatBox.style.display = chatBox.style.display === "none" ? "block" : "none";
-        }
-
-        function sendMessage() {
-            var input = document.getElementById("chat-input").value.trim();
-            if (input === "") return;
-
-            addMessage("You: " + input, "user");
-
-            var response = getChatResponse(input);
-            setTimeout(() => addMessage("Bot: " + response, "bot"), 1000);
-
-            document.getElementById("chat-input").value = "";
-        }
-
-        function getChatResponse(text) {
-            text = text.toLowerCase();
-            var room = campus.markers.find(r => text.includes(r.name.toLowerCase()));
-
-            if (room) {
-                highlightRoom(room);
-                return `The ${room.name} is located on the campus. I've highlighted it on the map for you!`;
+            if (isNaN(userLat) || isNaN(userLon)) {
+                alert("Please enter valid latitude and longitude values.");
+                return;
             }
 
-            if (text.includes("hello")) return "Hello! How can I assist you?";
-            if (text.includes("where is")) return "Can you specify the location you are looking for?";
-            if (text.includes("thank")) return "You're welcome!";
+            // Remove old marker if exists
+            if (userMarker) { map.removeLayer(userMarker); }
 
-            return "I'm not sure about that, but I can help you with locations!";
+            // Add user location marker
+            userMarker = L.circleMarker([userLat, userLon], { radius: 5, color: 'blue' })
+                .bindTooltip("Your Location", { permanent: true, direction: "top" })
+                .addTo(map);
         }
 
-        function addMessage(msg, sender) {
-            var chatBox = document.getElementById("chat-messages");
-            var msgDiv = document.createElement("div");
-            msgDiv.innerText = msg;
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
+        function drawRoute() {
+            if (window.routeLine) { map.removeLayer(window.routeLine); }
+            if (window.markers) { window.markers.forEach(m => map.removeLayer(m)); }
+            
+            window.markers = [];
 
-        function handleKeyPress(event) {
-            if (event.key === "Enter") sendMessage();
+            // Add markers at each point
+            pathPoints.forEach((point, index) => {
+                let color = (index === 0) ? 'green' : (index === pathPoints.length - 1) ? 'red' : 'blue';
+                let label = (index === 0) ? "Start (A)" : (index === pathPoints.length - 1) ? "End (B)" : "Point " + index;
+                
+                let marker = L.circleMarker(point, { radius: 4, color: color }).addTo(map)
+                    .bindTooltip(label, { permanent: true, direction: "top" });
+
+                window.markers.push(marker);
+            });
+
+            // Draw route with multiple points
+            window.routeLine = L.polyline(pathPoints, { color: 'red', weight: 2 }).addTo(map);
         }
     </script>
+
 </body>
 </html>
