@@ -252,9 +252,19 @@
                 return `The ${room.name} is located on the campus. I've highlighted it on the map for you!`;
             }
 
-            if (text.includes("hello","hii","hi","hy","hyy")) return "Hello! How can I assist you?";
-            if (text.includes("where is")) return "Can you specify the location you are looking for?";
-            if (text.includes("thank")) return "You're welcome!";
+            // if (text.includes("hello","hii","hi","hy","hyy")) return "Hello! How can I assist you?";
+            // if (text.includes("where is")) return "Can you specify the location you are looking for?";
+            // if (text.includes("thank")) return "You're welcome!";
+
+            if (["hello", "hii", "hi", "hy", "hyy"].some(word => text.includes(word))) 
+    return "Hello! How can I assist you?";
+
+if (text.includes("where is")) 
+    return "Can you specify the location you are looking for?";
+
+if (text.includes("thank")) 
+    return "You're welcome!";
+
 
             return "I'm not sure about that, but I can help you with locations!";
         }
